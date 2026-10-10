@@ -49,6 +49,33 @@ npm.cmd run dev
 
 `.npmrc` registra os flags necessarios aos adaptadores. `npm.cmd run web` abre a variante web. Expo Go depende da compatibilidade do runtime; nao comprova APK/IPA proprio.
 
+### Testar em outro computador e celular
+
+**Somente clonar nao basta:** o repositorio nao inclui `.env` real nem um Firebase remoto ja homologado. Sem configuracao, Auth falha com `auth/invalid-api-key`. Os valores SUBSTITUIR de `.env.example` nao funcionam.
+
+```powershell
+git clone https://github.com/Alladdin-ofc/prj-extensao-metodista.git
+cd prj-extensao-metodista
+npm.cmd ci
+Copy-Item .env.example .env
+# Preencher todos os campos obrigatorios com o Firebase autorizado.
+npm.cmd run dev -- --go --lan
+```
+
+No macOS/Linux, usar `npm` no lugar de `npm.cmd` e `cp .env.example .env` no lugar de Copy-Item. Instalar Node22 antes dos comandos. Nao copiar node_modules de outra maquina.
+
+1. Usar Expo Go compativel com **SDK54** no dispositivo; conferir a [documentacao de compatibilidade](https://docs.expo.dev/troubleshooting/expo-go-version-mismatch/) e [download por SDK](https://expo.dev/go).
+2. Colocar computador e celular na mesma rede e liberar Metro no firewall da rede privada. Evitar Wi-Fi com isolamento entre clientes. Abrir o QR exibido pelo Expo; USB/ADB nao e necessario para esse fluxo.
+3. Se LAN nao funcionar, avaliar `npm.cmd run tunnel -- --go`; pode exigir instalar o componente de tunel e utiliza servico externo. Nao e requisito para LAN.
+4. Configurar Firebase e publicar Rules/Functions conforme README_FIREBASE para testar autenticacao, gravacao, fotos e administracao completos. Visitante nao comprova esses fluxos.
+5. Manter EXPO_PUBLIC_FIREBASE_EMULATORS=0 para projeto remoto. Modo local aponta para 127.0.0.1: no celular isso significa o proprio celular, nao o PC; exige encaminhamento de portas no Android ou adaptacao/revisao de rede. Nao basta escanear QR com emuladores no PC.
+
+O projectId EAS em app.json e um identificador de vinculacao anterior, nao uma credencial; para builds na nuvem de outra conta, revisar/vincular um projeto Expo proprio. Isso nao e necessario para simplesmente servir o bundle local. Teste em outro dispositivo ainda depende do runtime real; instalacao/exportacao no clone nao equivalem a essa homologacao.
+
+### Publicacao e historico
+
+O historico preserva configuracoes publicas antigas de Firebase, referencias ao antigo administrador por e-mail e metadados de autoria dos commits. O codigo atual usa registro protegido adminRoles, nao esse bypass. Nenhuma senha real, token privado ou chave de conta de servico foi identificada na revisao delimitada; isso nao garante que o projeto Google remoto esteja seguro. Revisar [restricoes de API keys e Rules](https://firebase.google.com/docs/projects/api-keys) com o responsavel. Nao usar configuracao antiga como autorizacao para acessar o projeto.
+
 ## Repasse do Firebase
 
 **Leia [README_FIREBASE.md](README_FIREBASE.md)** para projeto, Authentication, variaveis, banco, Storage, Rules, Functions, primeiro master e checklist. [backend/README.md](backend/README.md) detalha contratos e evidencias historicas.
