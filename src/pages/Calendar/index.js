@@ -1,320 +1,218 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { ActivityIndicator, View, TextInput, StyleSheet, Alert, TouchableOpacity, Text, Platform, KeyboardAvoidingView } from 'react-native';
-import { SafeAreaViewComponent } from '../../styles';
-import { collection, onSnapshot, query, orderBy, addDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../../services/firebaseConfig';
-import { AuthContext } from '../../context/AuthContext';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Button } from "../../components/Button";
-import Modal from 'react-native-modal';
-import {
-  CalendarContainer,
-  HeaderContainer,
-  PageTitle,
-  EventCard,
-  EventHeader,
-  EventTitle,
-  EventTypeBadge,
-  EventTypeText,
-  EventDescription,
-  EventDateRow,
-  EventDateText,
-  EmptyEventsText
-} from './styles';
+import { SafeAreaViewComponent } from '../../styles';
+import { AuthContext } from '../../context/AuthContext';
+import { useSessionScope } from '../../context/useSessionScope';
+import { addChurchDays, CHURCH_TIME_ZONE, createEvent, EVENT_CATEGORIES, formatEventDate, getEventCategory, getEventDate, getEventDateKey, getEventTime, getWeekDays, getWeekStart, getWeeklyProgram, isSameDay, removeEvent, subscribeToEvents } from '../../services/eventService';
+import { EventFormModal } from '../../components/EventFormModal';
+import { EventDetailsModal } from '../../components/EventDetailsModal';
+import styles from './styles';
 
-export default function Calendar() {
+const dayLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+const categoryNames = { cultos: 'Culto', escola: 'Escola Dominical', eventos: 'Evento' };
+
+const formatWeekLabel = (days) => {
+  const first = days[0];
+  const last = days[6];
+  const firstMonth = first.toLocaleDateString('pt-BR', { month: 'long', timeZone: CHURCH_TIME_ZONE });
+  const lastMonth = last.toLocaleDateString('pt-BR', { month: 'long', timeZone: CHURCH_TIME_ZONE });
+  const firstKey = getEventDateKey(first);
+  const lastKey = getEventDateKey(last);
+  const firstDay = Number(firstKey.slice(8));
+  const lastDay = Number(lastKey.slice(8));
+  if (firstKey.slice(0, 7) === lastKey.slice(0, 7)) return `${firstDay}–${lastDay} ${firstMonth}`;
+  return `${firstDay} ${firstMonth} – ${lastDay} ${lastMonth}`;
+};
+
+export default function Calendar({ navigation }) {
   const { isAdmin, user } = useContext(AuthContext);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [weekStart, setWeekStart] = useState(() => getWeekStart());
+  const [selectedDay, setSelectedDay] = useState(() => new Date());
+  const [category, setCategory] = useState('todos');
+  const [refresh, setRefresh] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newDescription, setNewDescription] = useState('');
-  const [newDate, setNewDate] = useState('');
-  const [newType, setNewType] = useState('special');
   const [saving, setSaving] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const scope = useSessionScope(user?.uid, isAdmin);
+  useEffect(() => { setModalVisible(false); setSaving(false); }, [user?.uid, isAdmin]);
 
   useEffect(() => {
     setLoading(true);
-    const q = query(collection(db, 'events'), orderBy('date', 'asc'));
-    
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const eventsArray = [];
-      querySnapshot.forEach((doc) => {
-        eventsArray.push({ id: doc.id, ...doc.data() });
-      });
-      setEvents(eventsArray);
+    setError(false);
+    const timeout = setTimeout(() => {
+      setLoading(false);
+      setError(true);
+    }, 8000);
+    const unsubscribe = subscribeToEvents((items) => {
+      clearTimeout(timeout);
+      setEvents(items);
       setLoading(false);
       setError(false);
-    }, (error) => {
-      console.warn("Erro ao buscar agenda: ", error);
+    }, (listenerError) => {
+      clearTimeout(timeout);
+      console.warn('Calendar listener error:', listenerError.code || listenerError.message);
       setLoading(false);
       setError(true);
     });
+    return () => {
+      clearTimeout(timeout);
+      unsubscribe();
+    };
+  }, [user, refresh]);
 
-    return () => unsubscribe();
-  }, [user]);
+  const days = useMemo(() => getWeekDays(weekStart), [weekStart]);
+  const visibleEvents = useMemo(() => {
+    const weekEnd = addChurchDays(weekStart, 7);
+    const dynamic = events.map((event) => ({ ...event, eventDate: getEventDate(event), source: 'firestore' }))
+      .filter((event) => event.eventDate && event.eventDate >= weekStart && event.eventDate < weekEnd);
+    const recurring = getWeeklyProgram(weekStart);
+    return [...recurring, ...dynamic]
+      .filter((event) => category === 'todos' || getEventCategory(event) === category)
+      .sort((left, right) => (left.eventDate || left.date) - (right.eventDate || right.date));
+  }, [events, weekStart, category]);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const selectedEvents = visibleEvents.filter((event) => isSameDay(event.eventDate || event.date, selectedDay));
+
+  const changeWeek = (direction) => {
+    setWeekStart(addChurchDays(weekStart, direction * 7));
+    setSelectedDay(addChurchDays(selectedDay, direction * 7, '12:00'));
   };
 
-  const handleDateInput = (text) => {
-    let cleaned = text.replace(/\D/g, '');
-    if (cleaned.length > 12) cleaned = cleaned.substring(0, 12);
-
-    if (cleaned.length <= 2) {
-      setNewDate(cleaned);
-    } else if (cleaned.length <= 4) {
-      setNewDate(`${cleaned.slice(0, 2)}/${cleaned.slice(2)}`);
-    } else if (cleaned.length <= 8) {
-      setNewDate(`${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4)}`);
-    } else if (cleaned.length <= 10) {
-      setNewDate(`${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4, 8)} ${cleaned.slice(8)}`);
-    } else {
-      setNewDate(`${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4, 8)} ${cleaned.slice(8, 10)}:${cleaned.slice(10, 12)}`);
-    }
-  };
-
-  const handleAddEvent = async () => {
-    if (!newTitle.trim() || !newDate.trim()) {
-      Alert.alert("Atenção", "Título e data são obrigatórios.");
-      return;
-    }
-
-    // Parse dd/mm/yyyy HH:mm to ISO
-    const parts = newDate.match(/^(\d{2})\/(\d{2})\/(\d{4})\s?(\d{2})?:?(\d{2})?$/);
-    if (!parts) {
-      Alert.alert("Atenção", "Formato de data inválido. Use dd/mm/yyyy HH:mm");
-      return;
-    }
-    const [, day, month, year, hour = '00', minute = '00'] = parts;
-    const isoDate = new Date(year, month - 1, day, hour, minute).toISOString();
-
+  const handleCreate = async (payload) => {
+    const token = scope.capture();
+    if (!scope.isCurrent(token) || saving) return;
     setSaving(true);
     try {
-      await addDoc(collection(db, 'events'), {
-        title: newTitle.trim(),
-        description: newDescription.trim(),
-        date: isoDate,
-        type: newType
-      });
-      setNewTitle('');
-      setNewDescription('');
-      setNewDate('');
-      setNewType('special');
+      await createEvent(payload);
+      if (!scope.isCurrent(token)) return;
       setModalVisible(false);
-      Alert.alert("Sucesso", "Evento criado!");
-    } catch (err) {
-      console.warn('Event add error:', err.code || err.message);
-      Alert.alert("Erro", "Não foi possível criar o evento.");
+      Alert.alert('Publicado', 'O evento já aparece na agenda da comunidade.');
+    } catch (createError) {
+      if (!scope.isCurrent(token)) return;
+      Alert.alert('Não foi possível publicar', createError.message === 'invalid-date'
+        ? 'Confira a data e o horário informados.'
+        : 'Verifique sua conexão e tente novamente.');
     } finally {
-      setSaving(false);
+      if (scope.isCurrent(token)) setSaving(false);
     }
   };
 
-  const handleDeleteEvent = (eventId) => {
-    Alert.alert(
-      "Excluir Evento",
-      "Deseja realmente excluir este evento?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Excluir",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await deleteDoc(doc(db, 'events', eventId));
-            } catch (err) {
-              console.warn('Event delete error:', err.code || err.message);
-              Alert.alert("Erro", "Não foi possível excluir o evento.");
-            }
-          }
-        }
-      ]
-    );
+  const handleDelete = (event) => {
+    const token = scope.capture();
+    if (!scope.isCurrent(token)) return;
+    Alert.alert('Remover evento', `Deseja remover “${event.title}” da agenda?`, [
+    { text: 'Cancelar', style: 'cancel' },
+    { text: 'Remover', style: 'destructive', onPress: async () => {
+      if (!scope.isCurrent(token)) return;
+      try {
+        await removeEvent(event.id);
+      } catch (deleteError) {
+        if (!scope.isCurrent(token)) return;
+        Alert.alert('Não foi possível remover', 'Tente novamente em instantes.');
+      }
+    } }
+  ]);
   };
 
   return (
     <SafeAreaViewComponent>
-      <CalendarContainer>
-        <HeaderContainer>
-          <View style={styles.headerRow}>
-            <View>
-              <Ionicons name="calendar-outline" size={32} color="white" />
-              <PageTitle>Agenda da Igreja</PageTitle>
+      <ScrollView style={styles.page} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <View style={styles.headerTitleRow}>
+            <View style={styles.titleMark}><Ionicons name="calendar-outline" size={22} color="#167ec3" /></View>
+            <View style={styles.titleCopy}>
+              <Text style={styles.title}>Agenda</Text>
+              <Text style={styles.subtitle}>Cultos, encontros e eventos.</Text>
             </View>
-            {isAdmin && (
-              <TouchableOpacity onPress={() => setModalVisible(true)}>
-                <Ionicons name="add-circle" size={36} color="white" />
-              </TouchableOpacity>
-            )}
+            {isAdmin && <Pressable accessibilityRole="button" accessibilityLabel="Adicionar evento" style={styles.addButton} onPress={() => setModalVisible(true)}><Ionicons name="add" size={23} color="#fff" /></Pressable>}
           </View>
-        </HeaderContainer>
-        
-        {loading ? (
-          <ActivityIndicator size="large" color="#1e3a8a" style={{ marginTop: 32 }} />
-        ) : error ? (
-          <View style={{ alignItems: 'center', marginTop: 32 }}>
-            <Text style={{ color: '#ef4444', fontSize: 14 }}>Erro ao carregar eventos.</Text>
-            <TouchableOpacity onPress={() => { setLoading(true); setError(false); }} style={{ marginTop: 8 }}>
-              <Text style={{ color: '#3b82f6', fontSize: 14 }}>Tentar novamente</Text>
-            </TouchableOpacity>
+
+          <View style={styles.weekHeading}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Semana anterior" onPress={() => changeWeek(-1)} style={styles.weekArrow}><Ionicons name="chevron-back" size={20} color="#25282c" /></Pressable>
+            <Text style={styles.weekLabel}>{formatWeekLabel(days)}</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel="Próxima semana" onPress={() => changeWeek(1)} style={styles.weekArrow}><Ionicons name="chevron-forward" size={20} color="#25282c" /></Pressable>
           </View>
-        ) : events.length === 0 ? (
-          <EmptyEventsText>Nenhum evento programado no momento.</EmptyEventsText>
-        ) : (
-          events.map((evt) => (
-            <EventCard key={evt.id}>
-              <EventHeader>
-                <EventTitle>{evt.title}</EventTitle>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <EventTypeBadge type={evt.type}>
-                    <EventTypeText type={evt.type}>
-                      {evt.type === 'fixed' ? 'Fixado' : 'Especial'}
-                    </EventTypeText>
-                  </EventTypeBadge>
-                  {isAdmin && (
-                    <TouchableOpacity onPress={() => handleDeleteEvent(evt.id)}>
-                      <Ionicons name="trash-outline" size={20} color="#ef4444" />
-                    </TouchableOpacity>
-                  )}
+        </View>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
+          {[{ id: 'todos', label: 'Tudo' }, ...EVENT_CATEGORIES].map((item) => (
+            <Pressable key={item.id} onPress={() => setCategory(item.id)} style={[styles.filter, category === item.id && styles.filterActive]}>
+              <Text style={[styles.filterText, category === item.id && styles.filterTextActive]}>{item.label}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        {error && <Text style={styles.syncWarning}>Alguns eventos da nuvem não puderam ser atualizados. <Text onPress={() => setRefresh((value) => value + 1)} style={styles.retryInline}>Tentar novamente</Text></Text>}
+        {loading && <ActivityIndicator color="#1689d6" style={styles.loading} />}
+
+        <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={styles.weekGrid}>
+          {days.map((day, index) => {
+            const dayEvents = visibleEvents.filter((event) => isSameDay(event.eventDate || event.date, day));
+            const selected = isSameDay(day, selectedDay);
+            return (
+              <Pressable key={day.toISOString()} onPress={() => setSelectedDay(day)} style={[styles.dayColumn, selected && styles.dayColumnSelected]}>
+                <Text style={[styles.dayName, selected && styles.dayTextSelected]}>{dayLabels[index]}</Text>
+                <Text style={[styles.dayNumber, selected && styles.dayTextSelected]}>{Number(getEventDateKey(day).slice(8))}</Text>
+                <View style={styles.dayEvents}>
+                  {dayEvents.length === 0 ? <View style={styles.emptyDayMark} /> : dayEvents.slice(0, 4).map((event) => (
+                    <View key={`${event.source || 'firestore'}-${event.id}`} style={[styles.dayEvent, getEventCategory(event) === 'escola' ? styles.schoolEvent : getEventCategory(event) === 'cultos' ? styles.worshipEvent : styles.specialEvent]}>
+                      <Text style={styles.dayEventTitle} numberOfLines={3}>{event.title}</Text>
+                      {event.provisional ? <Text style={styles.dayEventTime}>Provisório</Text> : null}
+                      {!!event.time && <Text style={styles.dayEventTime}>{getEventTime(event)}</Text>}
+                    </View>
+                  ))}
+                  {dayEvents.length > 4 && <Text style={styles.moreEvents}>+{dayEvents.length - 4}</Text>}
                 </View>
-              </EventHeader>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
 
-              <EventDescription>{evt.description}</EventDescription>
-
-              <EventDateRow>
-                <Ionicons name="time-outline" size={16} color="#6b7280" />
-                <EventDateText>{formatDate(evt.date)}</EventDateText>
-              </EventDateRow>
-            </EventCard>
-          ))
-        )}
-        <View style={{ height: 32 }} />
-      </CalendarContainer>
-
-      <Modal isVisible={modalVisible} onBackdropPress={() => setModalVisible(false)}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Novo Evento</Text>
-
-            <Text style={styles.modalLabel}>Título *</Text>
-            <TextInput
-              style={styles.input}
-              value={newTitle}
-              onChangeText={setNewTitle}
-              placeholder="Ex: Culto de Oração"
-              placeholderTextColor="#9ca3af"
-            />
-
-            <Text style={[styles.modalLabel, { marginTop: 8 }]}>Descrição</Text>
-            <TextInput
-              style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
-              value={newDescription}
-              onChangeText={setNewDescription}
-              placeholder="Detalhes do evento..."
-              placeholderTextColor="#9ca3af"
-              multiline
-            />
-
-            <Text style={[styles.modalLabel, { marginTop: 8 }]}>Data e Hora * (dd/mm/yyyy HH:mm)</Text>
-            <TextInput
-              style={styles.input}
-              value={newDate}
-              onChangeText={handleDateInput}
-              placeholder="25/03/2026 19:00"
-              placeholderTextColor="#9ca3af"
-              keyboardType="numeric"
-              maxLength={16}
-            />
-
-            <Text style={[styles.modalLabel, { marginTop: 8 }]}>Tipo</Text>
-            <View style={styles.typeRow}>
-              <TouchableOpacity
-                style={[styles.typeButton, newType === 'special' && styles.typeActiveSpecial]}
-                onPress={() => setNewType('special')}
-              >
-                <Text style={newType === 'special' ? styles.typeTextActive : {}}>Especial</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.typeButton, newType === 'fixed' && styles.typeActiveFixed]}
-                onPress={() => setNewType('fixed')}
-              >
-                <Text style={newType === 'fixed' ? styles.typeTextActive : {}}>Fixo</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={{ marginTop: 16, gap: 8 }}>
-              <Button label={saving ? "Criando..." : "Criar Evento"} type="primary" onPress={handleAddEvent} disabled={saving} />
-              <Button label="Cancelar" type="secondary" onPress={() => setModalVisible(false)} />
-            </View>
+        <View style={styles.detailHeader}>
+          <View>
+            <Text style={styles.detailTitle}>{selectedDay.toLocaleDateString('pt-BR', { weekday: 'long', timeZone: CHURCH_TIME_ZONE })}</Text>
+            <Text style={styles.detailDate}>{formatEventDate(selectedDay)}</Text>
           </View>
-        </KeyboardAvoidingView>
-      </Modal>
+          <Text style={styles.eventCount}>{selectedEvents.length} {selectedEvents.length === 1 ? 'encontro' : 'encontros'}</Text>
+        </View>
+
+        {selectedEvents.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="sunny-outline" size={26} color="#6d747c" />
+            <Text style={styles.emptyTitle}>Dia livre na agenda</Text>
+            <Text style={styles.emptyText}>Ainda não há encontros programados para esta data.</Text>
+          </View>
+        ) : selectedEvents.map((event) => {
+          const eventDate = event.eventDate || event.date;
+          const categoryName = categoryNames[getEventCategory(event)] || 'Evento';
+          return (
+            <View key={`${event.source || 'firestore'}-${event.id}`} style={styles.detailRow}>
+              <View style={[styles.timeRail, getEventCategory(event) === 'escola' && styles.schoolRail, getEventCategory(event) === 'eventos' && styles.specialRail]} />
+              <View style={styles.detailCopy}>
+                <View style={styles.detailMeta}>
+                  <Text style={styles.categoryText}>{categoryName}</Text>
+                  {!!event.time && <Text style={styles.timeText}>{getEventTime(event)}</Text>}
+                </View>
+                <Text style={styles.eventTitle}>{event.title}</Text>
+                {!!event.description && <Text style={styles.eventDescription}>{event.description}</Text>}
+                {!!event.time && <Text style={styles.fullDate}>{formatEventDate(eventDate)}</Text>}
+                <Pressable testID="event-details" accessibilityRole="button" accessibilityLabel={`Ver detalhes de ${event.title}`} onPress={() => setSelectedEvent(event)} style={styles.detailsButton}>
+                  <Ionicons name="information-circle-outline" size={20} color="#167ec3" />
+                  <Text style={styles.retryInline}>Ver detalhes</Text>
+                </Pressable>
+              </View>
+              {isAdmin && event.source === 'firestore' && <Pressable accessibilityRole="button" accessibilityLabel={`Excluir ${event.title}`} onPress={() => handleDelete(event)} hitSlop={10}><Ionicons name="trash-outline" size={19} color="#747a82" /></Pressable>}
+            </View>
+          );
+        })}
+      </ScrollView>
+
+      <EventFormModal visible={modalVisible} onClose={() => setModalVisible(false)} onSubmit={handleCreate} saving={saving} />
+      <EventDetailsModal event={selectedEvent} onClose={() => setSelectedEvent(null)} onLogin={() => navigation.navigate('SignIn')} />
     </SafeAreaViewComponent>
   );
 }
-
-const styles = StyleSheet.create({
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    width: '100%',
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    padding: 24,
-    borderRadius: 16,
-  },
-  input: {
-    borderColor: '#d1d5db',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-  },
-  typeRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  typeButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-  },
-  typeActiveSpecial: {
-    backgroundColor: '#be185d',
-    borderColor: '#be185d',
-  },
-  typeActiveFixed: {
-    backgroundColor: '#1d4ed8',
-    borderColor: '#1d4ed8',
-  },
-  typeTextActive: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  modalLabel: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 4,
-  }
-});

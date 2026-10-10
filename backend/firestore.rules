@@ -1,0 +1,134 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+    function editor() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/adminRoles/$(request.auth.uid))
+        && get(/databases/$(database)/documents/adminRoles/$(request.auth.uid)).data.role in ['admin', 'master'];
+    }
+    function text(value, maximum) { return value is string && value.size() <= maximum; }
+    function optionalText(data, field, maximum) { return !(field in data) || text(data[field], maximum); }
+    function iso(value) {
+      return value is string && value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[.][0-9]{3}Z$');
+    }
+    function validProfile(data, uid) {
+      return data.keys().hasOnly(['name', 'email', 'dateOfBirth', 'phone', 'phoneType', 'address', 'city', 'state', 'postalCode', 'avatarUrl', 'avatarPath', 'createdAt'])
+        && data.keys().hasAll(['name', 'email', 'createdAt'])
+        && text(data.name, 200) && data.name.size() > 0
+        && text(data.email, 320) && data.email.matches('^[^ @]+@[^ @]+[.][^ @]+$')
+        && iso(data.createdAt)
+        && optionalText(data, 'dateOfBirth', 10)
+        && (!('dateOfBirth' in data) || data.dateOfBirth == '' || data.dateOfBirth.matches('^[0-9]{2}/[0-9]{2}/[0-9]{4}$'))
+        && optionalText(data, 'phone', 30)
+        && (!('phoneType' in data) || data.phoneType in ['celular', 'residencial'])
+        && optionalText(data, 'address', 500)
+        && optionalText(data, 'city', 150)
+        && optionalText(data, 'state', 2)
+        && (!('state' in data) || data.state == '' || data.state.matches('^[A-Z]{2}$'))
+        && optionalText(data, 'postalCode', 9)
+        && (!('postalCode' in data) || data.postalCode == '' || data.postalCode.matches('^[0-9]{5}-?[0-9]{3}$'))
+        && optionalText(data, 'avatarUrl', 2048)
+        && (!('avatarUrl' in data) || data.avatarUrl == '' || data.avatarUrl.matches('^https://.+$'))
+        && (!('avatarPath' in data) || (data.avatarPath is string && data.avatarPath == 'avatars/' + uid + '.jpg'));
+    }
+    function validAttendanceDate(value) {
+      return value is string
+        && value.matches('^(19|20|21)[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
+        && validAttendanceDay(value.split('-'));
+    }
+    function validAttendanceDay(parts) {
+      let year = int(parts[0]);
+      let month = int(parts[1]);
+      let day = int(parts[2]);
+      let leap = year % 400 == 0 || (year % 4 == 0 && year % 100 != 0);
+      return day <= (month == 2 ? (leap ? 29 : 28) : (month in [4, 6, 9, 11] ? 30 : 31));
+    }
+    function safeAttendanceId(id) {
+      return id.size() <= 200 && id.matches('^(program|remote)-[A-Za-z0-9_-]+$');
+    }
+    function validAttendance(data, id) {
+      return data.keys().hasOnly(['eventId', 'title', 'date', 'time', 'status', 'confirmedAt'])
+        && data.keys().hasAll(['eventId', 'title', 'date', 'time', 'status', 'confirmedAt'])
+        && safeAttendanceId(id) && data.eventId is string && data.eventId == id
+        && text(data.title, 200) && data.title.size() > 0
+        && validAttendanceDate(data.date)
+        && data.time is string && (data.time == '' || data.time.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'))
+        && data.status in ['confirmed', 'cancelled']
+        && data.confirmedAt is timestamp && data.confirmedAt == request.time;
+    }
+    match /users/{uid}/attendance/{eventId} {
+      allow read: if owner(uid);
+      allow create, update: if owner(uid) && validAttendance(request.resource.data, eventId);
+      allow delete: if owner(uid) && safeAttendanceId(eventId);
+    }
+    match /users/{uid} {
+      allow get: if owner(uid);
+      allow list: if false;
+      allow create: if owner(uid) && validProfile(request.resource.data, uid);
+      allow update: if owner(uid) && validProfile(request.resource.data, uid)
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if owner(uid);
+    }
+    match /adminRoles/{uid} {
+      allow get: if owner(uid);
+      allow list, write: if false;
+    }
+    match /adminMetadata/{id} { allow read, write: if false; }
+    match /adminAudit/{id} { allow read, write: if false; }
+    function validEvent(data) {
+      return data.keys().hasOnly(['title', 'description', 'date', 'time', 'category', 'type', 'createdAt', 'imageUrl'])
+        && data.keys().hasAll(['title', 'description', 'date', 'time', 'category', 'type', 'createdAt'])
+        && text(data.title, 200) && data.title.size() > 0
+        && text(data.description, 10000) && iso(data.date) && iso(data.createdAt)
+        && data.time is string && data.time.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')
+        && data.category in ['eventos', 'cultos', 'escola']
+        && ((data.category == 'eventos' && data.type == 'special') || (data.category != 'eventos' && data.type == 'fixed'))
+        && optionalText(data, 'imageUrl', 2048);
+    }
+    match /events/{id} {
+      allow read: if true;
+      allow create, update: if editor() && validEvent(request.resource.data);
+      allow delete: if editor();
+    }
+    function validNews(data) {
+      return data.keys().hasOnly(['message', 'publishDate', 'priority'])
+        && data.keys().hasAll(['message', 'publishDate', 'priority'])
+        && text(data.message, 10000) && data.message.size() > 0
+        && iso(data.publishDate) && data.priority in ['normal', 'high'];
+    }
+    match /news/{id} {
+      allow read: if true;
+      allow create, update: if editor() && validNews(request.resource.data);
+      allow delete: if editor();
+    }
+    function infoFields() { return ['history', 'about', 'mission', 'pastorText']; }
+    function validInfo(data) {
+      return data.keys().hasAny(infoFields())
+        && optionalText(data, 'history', 20000) && optionalText(data, 'about', 20000)
+        && optionalText(data, 'mission', 20000) && optionalText(data, 'pastorText', 20000)
+        && (!('history' in data) || data.history.size() > 0)
+        && (!('about' in data) || data.about.size() > 0)
+        && (!('mission' in data) || data.mission.size() > 0)
+        && (!('pastorText' in data) || data.pastorText.size() > 0);
+    }
+    match /config/info {
+      allow read: if true;
+      allow create: if editor() && request.resource.data.keys().hasOnly(infoFields())
+        && validInfo(request.resource.data);
+      allow update: if editor() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(infoFields())
+        && validInfo(request.resource.data);
+      allow delete: if editor();
+    }
+    match /config/pix {
+      allow read: if true;
+      allow create, update: if editor()
+        && request.resource.data.keys().hasOnly(['key', 'label'])
+        && request.resource.data.keys().hasAll(['key', 'label'])
+        && text(request.resource.data.key, 320) && request.resource.data.key.size() > 0
+        && text(request.resource.data.label, 200) && request.resource.data.label.size() > 0;
+      allow delete: if editor();
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

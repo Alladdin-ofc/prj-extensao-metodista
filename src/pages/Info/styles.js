@@ -4,33 +4,33 @@ import styled from "styled-components/native";
 export const HomeContainer = styled.View`
   flex: 1;
   width: 100%;
-  display: flex;
+  background-color: #f7f8fa;
 `
 
 export const ScreenHeader = styled.View`
   display: flex;
   flex-direction: row;
   align-items:  center;
-  padding-left: 8px;
-  padding-right: 8px;
+  padding-horizontal: 18px;
   width: 100%;
-  height: 8%;
+  min-height: 62px;
   justify-content: space-between;
-  shadow-color: #000;
-  shadow-offset: 0px 4px; 
-  shadow-opacity: 0.2; 
-  shadow-radius: 4px;
-  elevation: 3; 
+  background-color: #ffffff;
+  border-bottom-width: 1px;
+  border-bottom-color: #e3e6e9;
 `;
 
 
 export const HeaderTitle = styled.Text`
-  font-size: 20px;
+  color: #202328;
+  font-size: 16px;
+  font-weight: 700;
 `
 
 export const LogoImage = styled.Image`
-  height: 100%;
-  width: 40px;
+  height: 42px;
+  width: 42px;
+  resize-mode: contain;
 `
 
 
@@ -41,22 +41,28 @@ export const MenuContainer = styled.View`
 export const MenuSrc = styled.View`
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
+  justify-content: flex-start;
+  gap: 24px;
+  padding: 0 20px;
+  background-color: #fff;
+  border-bottom-width: 1px;
+  border-bottom-color: #e3e6e9;
 `
 
 export const MenuItem = styled.TouchableOpacity`
-  border: 1px solid blue;
-  border-top-width: 0px;
-  border-left-width: 0px;
-  border-right-width: 0px;
+  min-height: 46px;
+  justify-content: center;
   border-bottom-width: ${({ isSelected }) => isSelected ? '2px' : '0px'};
+  border-bottom-color: #1689d6;
 `
 
 export const MenuItemLabel = styled.Text`
-  font-size: 18px;
+  color: #${({ isSelected }) => isSelected ? '167ec3' : '4d535a'};
+  font-size: 14px;
+  font-weight: ${({ isSelected }) => isSelected ? '700' : '500'};
 `
 
 export const MenuContent = styled.ScrollView`
-  padding: 20px;
+  padding: 18px 20px;
 `
 

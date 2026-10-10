@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /avatars/{filename} {
+      function owner() { return request.auth != null && filename == request.auth.uid + '.jpg'; }
+      allow get: if owner();
+      allow list: if false;
+      allow create, update: if owner() && request.resource.size > 0
+        && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType in ['image/jpeg', 'image/png', 'image/webp'];
+      allow delete: if owner();
+    }
+    match /{path=**} { allow read, write: if false; }
+  }
+}

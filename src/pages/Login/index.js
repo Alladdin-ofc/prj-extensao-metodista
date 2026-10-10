@@ -1,4 +1,5 @@
 
+import React, { useContext, useEffect } from 'react';
 // Importando o componente de delimitação de tela
 import { SafeAreaViewComponent } from "../../styles";
 
@@ -27,11 +28,17 @@ import LogoImageSrc from '../../../assets/MetodistaLogo.png'
 import Swiper from 'react-native-swiper';
 
 // Importando o componente de estilização do próprio react native
-import { StyleSheet } from 'react-native'
+import { Platform, StyleSheet, View } from 'react-native'
+import { AuthContext } from '../../context/AuthContext';
 
 
 // aqui é definido o componente de Home e pegando a propriedade navigation presente para poder fazer a navegação entre telas
 export default function Home({ navigation }){
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (user && navigation.isFocused()) navigation.navigate('Home');
+  }, [navigation, user]);
 
   // definidos os textos que vão ser mostrados no swiper
   const sliderTexts = [
@@ -47,9 +54,10 @@ export default function Home({ navigation }){
             <InfoContainer>
               {/* Aqui é passado o import da logo para dentro do componente de imagem */}
               <LogoImage source={LogoImageSrc}/>
-              <Title>Bem vindo Metodista!</Title>
+              <Title>Bem-vindo!</Title>
             
-              <Swiper style={styles.swiper}>
+              <View style={styles.swiper}>
+              <Swiper height={128} loop={Platform.OS !== 'web'} dotColor="#c7ccd1" activeDotColor="#c92834" autoplay={Platform.OS !== 'web'} autoplayTimeout={5}>
                 {/* Mapeando os itens do array sliderTexts, funciona basicamente como um forEach, mas possui um retorno de um array. No react pode ser feito isso para diminuir repetição de código */}
                {sliderTexts.map((item, index) => (
                  <SliderBody key={index}>
@@ -57,14 +65,16 @@ export default function Home({ navigation }){
                  </SliderBody>
                ))}
              </Swiper>
+              </View>
 
            </InfoContainer> 
            <SrcContainer>
             <ButtonsContainer>
-              <Button label={'Entrar'} type='secondary' onPress={() => navigation.navigate('SignIn')}/>
+              <Button label={'Entrar'} type='secondary' style={{ flex: 1, width: 'auto' }} onPress={() => navigation.navigate('SignIn')}/>
               <Button 
                 label={'Cadastre-se'} 
                 type='primary' 
+                style={{ flex: 1, width: 'auto' }}
                 onPress={() => navigation.navigate('Register')}
               />
             </ButtonsContainer>
@@ -84,6 +94,9 @@ export default function Home({ navigation }){
 
 const styles = StyleSheet.create({
   swiper: {
-    marginTop: 8
+    flexShrink: 0,
+    width: '100%',
+    height: 128,
+    marginTop: 14
   }
 })

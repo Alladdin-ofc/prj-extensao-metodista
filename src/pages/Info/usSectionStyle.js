@@ -5,8 +5,9 @@ export const UsSectionContainer = styled.ScrollView`
 
 export const UsSectionImage = styled.Image`
   width: 100%;
-  border-radius: 20px;
-  height: 25%;
+  border-radius: 8px;
+  height: 210px;
+  resize-mode: cover;
 `
 
 export const UsSectionSinceText = styled.Text`
@@ -21,12 +22,15 @@ export const UsSectionSinceText = styled.Text`
 export const UsSectionTitle = styled.Text`
   font-size: 20px;
   font-weight: 700;
-  margin-bottom: 8px;
+  color: #22262b;
+  margin-bottom: 6px;
 `
 
 
 export const UsSectionContentText = styled.Text`
-  font-size: 16px;
+  font-size: 15px;
+  line-height: 22px;
+  color: #444b53;
   margin-bottom: 8px;
 `
 
@@ -40,24 +44,25 @@ export const ReadMoreButton = styled.TouchableOpacity`
 `
 
 export const ReadMoreButtonText = styled.Text`
-  font-size: 20px;
+  font-size: 15px;
 `
 
 export const PastorSection = styled.View`
   display: flex;
   flex-direction: row;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
+  align-items: flex-start;
 `
 
 export const PastorImage = styled.Image`
-  width: 40%;
-  border-radius: 20px;
-  height: 50%;
+  width: 36%;
+  border-radius: 8px;
+  height: 156px;
+  resize-mode: cover;
 `
 
-export const PastorTextContainer = styled.Text`
+export const PastorTextContainer = styled.View`
   display: flex;
-  width: 60%;
-  margin-bottom: 200px;
+  flex: 1;
 `

@@ -1,86 +1,58 @@
-import styled from "styled-components/native";
+import { StyleSheet } from 'react-native';
 
-export const CalendarContainer = styled.ScrollView`
-  width: 100%;
-  height: 100%;
-  background-color: #f8f9fa;
-`
-
-export const HeaderContainer = styled.View`
-  width: 100%;
-  padding: 32px 24px;
-  background-color: #1e3a8a;
-  border-bottom-left-radius: 24px;
-  border-bottom-right-radius: 24px;
-`
-
-export const PageTitle = styled.Text`
-  font-size: 28px;
-  font-weight: bold;
-  color: white;
-  margin-top: 16px;
-`
-
-export const EventCard = styled.View`
-  background-color: white;
-  margin: 16px 24px 0 24px;
-  padding: 16px;
-  border-radius: 12px;
-  elevation: 2;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.05);
-`
-
-export const EventHeader = styled.View`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom-width: 1px;
-  border-bottom-color: #f3f4f6;
-  padding-bottom: 8px;
-  margin-bottom: 8px;
-`
-
-export const EventTitle = styled.Text`
-  font-size: 18px;
-  font-weight: bold;
-  color: #1f2937;
-`
-
-export const EventTypeBadge = styled.View`
-  background-color: ${props => props.type === 'fixed' ? '#dbeafe' : '#fce7f3'};
-  padding: 4px 8px;
-  border-radius: 8px;
-`
-
-export const EventTypeText = styled.Text`
-  font-size: 12px;
-  color: ${props => props.type === 'fixed' ? '#1d4ed8' : '#be185d'};
-  font-weight: bold;
-`
-
-export const EventDescription = styled.Text`
-  font-size: 14px;
-  color: #4b5563;
-  margin-bottom: 12px;
-`
-
-export const EventDateRow = styled.View`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-`
-
-export const EventDateText = styled.Text`
-  font-size: 14px;
-  color: #6b7280;
-  font-weight: bold;
-`
-
-export const EmptyEventsText = styled.Text`
-  font-size: 14px;
-  color: #6b7280;
-  text-align: center;
-  margin-top: 32px;
-`
+export default StyleSheet.create({
+  page: { flex: 1, backgroundColor: '#f7f8fa' },
+  content: { paddingBottom: 26 },
+  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12, backgroundColor: '#fff' },
+  headerTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  titleMark: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: '#dceef8' },
+  titleCopy: { flex: 1, minWidth: 0 },
+  title: { color: '#202328', fontSize: 24, fontWeight: '700' },
+  subtitle: { color: '#5e656d', fontSize: 13, marginTop: 2 },
+  addButton: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#1689d6', alignItems: 'center', justifyContent: 'center' },
+  weekHeading: { marginTop: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  weekArrow: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f2f4' },
+  weekLabel: { color: '#272b30', fontSize: 18, fontWeight: '700', textTransform: 'capitalize' },
+  filters: { gap: 8, paddingHorizontal: 20, paddingVertical: 14 },
+  filter: { minHeight: 36, borderWidth: 1, borderColor: '#cdd2d8', borderRadius: 18, paddingHorizontal: 14, justifyContent: 'center', backgroundColor: '#fff' },
+  filterActive: { backgroundColor: '#dceef8', borderColor: '#1689d6' },
+  filterText: { color: '#4d535a', fontSize: 13 },
+  filterTextActive: { color: '#126fae', fontWeight: '700' },
+  syncWarning: { color: '#8d4a13', backgroundColor: '#fff3df', marginHorizontal: 20, padding: 10, borderRadius: 6, fontSize: 13 },
+  retryInline: { color: '#126fae', fontWeight: '700' },
+  loading: { marginVertical: 10 },
+  weekGrid: { paddingHorizontal: 16, paddingBottom: 12, gap: 5 },
+  dayColumn: { width: 83, minHeight: 220, padding: 7, borderRadius: 6, borderWidth: 1, borderColor: '#e1e4e7', backgroundColor: '#fff', alignItems: 'center' },
+  dayColumnSelected: { borderColor: '#1689d6', backgroundColor: '#f4fbff' },
+  dayName: { color: '#535a62', fontSize: 12, fontWeight: '600', marginTop: 4 },
+  dayNumber: { color: '#202328', fontSize: 18, fontWeight: '700', marginTop: 3, marginBottom: 10 },
+  dayTextSelected: { color: '#126fae' },
+  dayEvents: { width: '100%', flex: 1, gap: 5 },
+  emptyDayMark: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#c7ccd1', alignSelf: 'center', marginTop: 12 },
+  dayEvent: { minHeight: 50, borderRadius: 5, padding: 5, justifyContent: 'center' },
+  worshipEvent: { backgroundColor: '#dceef8' },
+  schoolEvent: { backgroundColor: '#e6f1df' },
+  specialEvent: { backgroundColor: '#f8e5e5' },
+  dayEventTitle: { color: '#263039', fontSize: 10, lineHeight: 13, fontWeight: '600' },
+  dayEventTime: { color: '#45515b', fontSize: 9, marginTop: 3 },
+  moreEvents: { color: '#167ec3', fontSize: 10, textAlign: 'center' },
+  detailHeader: { marginHorizontal: 20, marginTop: 8, marginBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  detailTitle: { color: '#202328', fontSize: 20, fontWeight: '700', textTransform: 'capitalize' },
+  detailDate: { color: '#626970', fontSize: 12, marginTop: 3, textTransform: 'capitalize' },
+  eventCount: { color: '#5a6068', fontSize: 12 },
+  emptyState: { marginHorizontal: 20, marginTop: 8, padding: 20, borderRadius: 8, borderWidth: 1, borderColor: '#e2e5e8', backgroundColor: '#fff', alignItems: 'center' },
+  emptyTitle: { color: '#25282c', fontWeight: '700', fontSize: 15, marginTop: 8 },
+  emptyText: { color: '#5f666e', fontSize: 13, textAlign: 'center', marginTop: 4, lineHeight: 19 },
+  detailRow: { marginHorizontal: 20, marginBottom: 8, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 11, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e4e7ea', borderRadius: 7 },
+  timeRail: { width: 4, alignSelf: 'stretch', minHeight: 48, borderRadius: 2, backgroundColor: '#1689d6' },
+  schoolRail: { backgroundColor: '#54864b' },
+  specialRail: { backgroundColor: '#bb4249' },
+  detailCopy: { flex: 1, minWidth: 0 },
+  detailMeta: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 },
+  categoryText: { color: '#535a62', fontSize: 11, fontWeight: '600' },
+  timeText: { color: '#167ec3', fontSize: 12, fontWeight: '700' },
+  eventTitle: { color: '#25282c', fontSize: 15, fontWeight: '700' },
+  eventDescription: { color: '#525860', fontSize: 13, lineHeight: 19, marginTop: 3 },
+  fullDate: { color: '#626970', fontSize: 11, marginTop: 4, textTransform: 'capitalize' },
+  detailsButton: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }
+});

@@ -7,6 +7,7 @@ import * as Clipboard from 'expo-clipboard';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
 import { AuthContext } from '../../context/AuthContext';
+import { useSessionScope } from '../../context/useSessionScope';
 import Modal from 'react-native-modal';
 import { Text } from 'react-native';
 import {
@@ -21,8 +22,8 @@ import {
   VerseText
 } from './styles';
 
-const DEFAULT_PIX = "00.000.000/0001-00";
-const DEFAULT_PIX_LABEL = "Chave PIX (CNPJ)";
+const DEFAULT_PIX = '';
+const DEFAULT_PIX_LABEL = 'Chave PIX da igreja';
 
 export default function Rocket() {
   const { isAdmin, user } = useContext(AuthContext);
@@ -32,49 +33,89 @@ export default function Rocket() {
   const [editKey, setEditKey] = useState('');
   const [editLabel, setEditLabel] = useState('');
   const [saving, setSaving] = useState(false);
+  const scope = useSessionScope(user?.uid, isAdmin);
 
   useEffect(() => {
+    let active = true;
+    setPixKey(DEFAULT_PIX);
+    setPixLabel(DEFAULT_PIX_LABEL);
+    setModalVisible(false);
+    setEditKey('');
+    setEditLabel('');
+    setSaving(false);
     const unsubscribe = onSnapshot(doc(db, 'config', 'pix'), (docSnap) => {
+      if (!active) return;
       if (docSnap.exists()) {
         const data = docSnap.data();
         setPixKey(data.key || DEFAULT_PIX);
         setPixLabel(data.label || DEFAULT_PIX_LABEL);
+      } else {
+        setPixKey(DEFAULT_PIX);
+        setPixLabel(DEFAULT_PIX_LABEL);
       }
     }, (err) => {
-      console.warn('Pix listener error:', err);
+      if (!active) return;
+      setPixKey(DEFAULT_PIX);
+      setPixLabel(DEFAULT_PIX_LABEL);
+      console.warn('Pix listener error:', err.code || err.message);
     });
-    return () => unsubscribe();
-  }, [user]);
+    return () => { active = false; unsubscribe(); };
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!isAdmin) { setModalVisible(false); setEditKey(''); setEditLabel(''); setSaving(false); }
+  }, [isAdmin]);
 
   const copyToClipboard = async () => {
-    await Clipboard.setStringAsync(pixKey);
-    Alert.alert("Sucesso", "Chave PIX copiada para a área de transferência!");
+    if (!pixKey) {
+      Alert.alert('Chave indisponível', 'A administração ainda não cadastrou a chave PIX.');
+      return;
+    }
+    try {
+      await Clipboard.setStringAsync(pixKey);
+      Alert.alert('Chave copiada', 'Confira o destinatário no aplicativo do seu banco antes de confirmar.');
+    } catch (error) {
+      Alert.alert('Não foi possível copiar', 'Selecione e copie a chave manualmente.');
+    }
   };
 
   const openEditModal = () => {
+    if (!isAdmin || !user) return;
+    scope.invalidate();
+    setSaving(false);
     setEditKey(pixKey);
     setEditLabel(pixLabel);
     setModalVisible(true);
   };
 
+  const closeEditModal = () => {
+    scope.invalidate();
+    setSaving(false);
+    setModalVisible(false);
+  };
+
   const savePixKey = async () => {
+    if (!isAdmin || !user || saving) return;
     if (!editKey.trim()) {
       Alert.alert("Atenção", "A chave PIX não pode estar vazia.");
       return;
     }
     setSaving(true);
+    const token = scope.capture();
     try {
       await setDoc(doc(db, 'config', 'pix'), {
         key: editKey.trim(),
         label: editLabel.trim() || DEFAULT_PIX_LABEL
       });
+      if (!scope.isCurrent(token)) return;
       setModalVisible(false);
       Alert.alert("Sucesso", "Chave PIX atualizada!");
     } catch (err) {
+      if (!scope.isCurrent(token)) return;
       console.warn('PIX save error:', err.code || err.message);
       Alert.alert("Erro", "Não foi possível atualizar a chave PIX.");
     } finally {
-      setSaving(false);
+      if (scope.isCurrent(token)) setSaving(false);
     }
   };
 
@@ -82,18 +123,22 @@ export default function Rocket() {
     <SafeAreaViewComponent>
       <RocketContainer>
         <HeaderContainer>
-          <Ionicons name="heart-circle-outline" size={64} color="white" />
+          <View style={styles.headerIcon}><Ionicons name="heart-outline" size={26} color="#c92834" /></View>
           <PageTitle>Dízimos e Ofertas</PageTitle>
-          <SubTitle>Contribua com a obra e ajude a nossa igreja a crescer.</SubTitle>
+          <SubTitle>Contribua com a missão da comunidade.</SubTitle>
         </HeaderContainer>
 
         <PixCard>
-          <PixLabel>{pixLabel}</PixLabel>
-          <PixKey>{pixKey}</PixKey>
-          <Button label="Copiar Chave PIX" type="primary" onPress={copyToClipboard} />
+          <View style={styles.pixHeading}>
+            <Ionicons name="qr-code-outline" size={22} color="#167ec3" />
+            <PixLabel>{pixLabel}</PixLabel>
+          </View>
+          <PixKey selectable>{pixKey || 'Chave ainda não cadastrada'}</PixKey>
+          {!pixKey && <Text style={styles.pixNotice}>Quando a chave oficial estiver disponível, ela aparecerá aqui.</Text>}
+          <Button label="Copiar chave PIX" type="primary" onPress={copyToClipboard} disabled={!pixKey} />
           {isAdmin && (
             <View style={{ marginTop: 12 }}>
-              <Button label="✏️ Editar Chave PIX" type="secondary" onPress={openEditModal} />
+              <Button label="Editar dados do PIX" type="secondary" onPress={openEditModal} />
             </View>
           )}
         </PixCard>
@@ -109,7 +154,7 @@ export default function Rocket() {
         <View style={{ height: 32 }} />
       </RocketContainer>
 
-      <Modal isVisible={modalVisible} onBackdropPress={() => setModalVisible(false)}>
+      <Modal isVisible={modalVisible} onBackdropPress={closeEditModal} onBackButtonPress={closeEditModal}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Editar Chave PIX</Text>
@@ -131,7 +176,7 @@ export default function Rocket() {
             />
             <View style={{ marginTop: 16, gap: 8 }}>
               <Button label={saving ? "Salvando..." : "Salvar"} type="primary" onPress={savePixKey} disabled={saving} />
-              <Button label="Cancelar" type="secondary" onPress={() => setModalVisible(false)} />
+              <Button label="Cancelar" type="secondary" onPress={closeEditModal} />
             </View>
           </View>
         </KeyboardAvoidingView>
@@ -141,6 +186,24 @@ export default function Rocket() {
 }
 
 const styles = StyleSheet.create({
+  headerIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#f8e5e5',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  pixHeading: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  pixNotice: {
+    color: '#5f666e',
+    fontSize: 13,
+    lineHeight: 19,
+    marginBottom: 14
+  },
   modalContent: {
     backgroundColor: 'white',
     padding: 24,

@@ -31,6 +31,22 @@ yarn-error.*
 # local env files
 .env
 .env*.local
+.env.*
+!.env.example
+
+# Private local evidence and generated files
+_apoio-local/
+.playwright-cli/
+.vs/
+build/
+coverage/
+android/
+ios/
+*-debug.log
+*.log
+*-service-account*.json
+serviceAccount*.json
+/({text
 
 # typescript
 *.tsbuildinfo

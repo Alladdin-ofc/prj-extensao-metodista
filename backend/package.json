@@ -1,0 +1,11 @@
+{
+  "name": "metodista-backend-handoff",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test functions/test/*.test.js tests/bootstrap.test.js",
+    "test:emulator": "node --test --test-concurrency=1 tests/emulator-*.test.js",
+    "emulators:test": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/test-emulators.ps1"
+  },
+  "devDependencies": { "@firebase/rules-unit-testing": "^5.0.0", "firebase": "^12.0.0", "firebase-tools": "^15.0.0" }
+}

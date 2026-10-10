@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Alert, View, TextInput, Platform, Text, TouchableOpacity as RNTouchableOpacity, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, Alert, View, TextInput, Platform, Text, Image, TouchableOpacity as RNTouchableOpacity, KeyboardAvoidingView } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaViewComponent } from '../../styles';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { Button } from "../../components/Button";
 import Modal from 'react-native-modal';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../services/firebaseConfig';
+import MetodistaLogo from '../../../assets/MetodistaLogo.png';
 import {
   SignInContainer,
   HeaderContainer,
@@ -92,8 +93,9 @@ export default function SignIn({ navigation }) {
         scrollEnabled={true}
       >
         <SignInContainer>
+          <Image source={MetodistaLogo} style={styles.logo} resizeMode="contain" />
           <HeaderContainer>
-            <HeaderTitle>Entrar</HeaderTitle>
+            <HeaderTitle>Entre em sua conta</HeaderTitle>
             <CancelButton onPress={() => navigation.navigate('Login')}>
               <Text>Voltar</Text>
             </CancelButton>
@@ -191,6 +193,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center'
   },
+  logo: {
+    width: 92,
+    height: 92,
+    marginBottom: 18
+  },
   modalContent: {
     backgroundColor: 'white',
     padding: 24,
@@ -204,12 +211,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   passwordInput: {
-    borderColor: 'lightgrey',
+    borderColor: '#d7dbe0',
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 6,
     padding: 12,
     fontSize: 16,
-    width: '85%',
+    flex: 1,
+    minWidth: 0,
     fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
   },
   forgotPasswordText: {

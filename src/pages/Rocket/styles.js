@@ -1,71 +1,73 @@
-import styled from "styled-components/native";
+import styled from 'styled-components/native';
 
 export const RocketContainer = styled.ScrollView`
+  flex: 1;
   width: 100%;
-  height: 100%;
-  background-color: #f8f9fa;
-`
+  background-color: #f7f8fa;
+`;
 
 export const HeaderContainer = styled.View`
   width: 100%;
-  padding: 32px 24px;
-  background-color: #059669;
-  border-bottom-left-radius: 24px;
-  border-bottom-right-radius: 24px;
-  display: flex;
+  padding: 28px 22px 22px;
+  background-color: #ffffff;
   align-items: center;
-`
+  border-bottom-width: 1px;
+  border-bottom-color: #e4e7ea;
+`;
 
 export const PageTitle = styled.Text`
-  font-size: 28px;
-  font-weight: bold;
-  color: white;
-  margin-top: 16px;
-`
+  color: #202328;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 10px;
+`;
 
 export const SubTitle = styled.Text`
-  font-size: 16px;
-  color: #d1fae5;
-  margin-top: 8px;
+  max-width: 340px;
+  color: #535a62;
+  font-size: 14px;
+  line-height: 21px;
+  margin-top: 5px;
   text-align: center;
-`
+`;
 
 export const PixCard = styled.View`
-  background-color: white;
-  margin: 32px 24px 16px 24px;
-  padding: 24px;
-  border-radius: 16px;
-  elevation: 3;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.05);
-  border-top-width: 4px;
-  border-top-color: #10b981;
-`
+  background-color: #ffffff;
+  margin: 22px 20px 14px;
+  padding: 20px;
+  border-radius: 8px;
+  border-width: 1px;
+  border-color: #e1e5e8;
+`;
 
 export const PixLabel = styled.Text`
+  flex: 1;
+  color: #3f464e;
   font-size: 14px;
-  color: #6b7280;
-  margin-bottom: 4px;
-`
+  font-weight: 600;
+  margin-left: 9px;
+`;
 
 export const PixKey = styled.Text`
-  font-size: 20px;
-  font-weight: bold;
-  color: #1f2937;
-  margin-bottom: 24px;
-  letter-spacing: 1px;
-`
+  color: #202328;
+  font-size: 19px;
+  font-weight: 700;
+  margin-top: 16px;
+  margin-bottom: 14px;
+  line-height: 26px;
+`;
 
 export const VerseContainer = styled.View`
-  margin: 16px 24px 32px 24px;
-  padding: 16px;
-  background-color: #ecfdf5;
-  border-radius: 12px;
-`
+  margin: 8px 20px 24px;
+  padding: 16px 18px;
+  background-color: #e7f2f8;
+  border-radius: 8px;
+`;
 
 export const VerseText = styled.Text`
+  color: #31434f;
   font-size: 14px;
-  color: #065f46;
-  font-style: italic;
-  text-align: center;
   line-height: 22px;
-`
+  text-align: left;
+`;

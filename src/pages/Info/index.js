@@ -4,6 +4,7 @@ import { StyleSheet, View, Linking, TextInput, Alert, TouchableOpacity, Text, Pl
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
 import { AuthContext } from '../../context/AuthContext';
+import { useSessionScope } from '../../context/useSessionScope';
 import Modal from 'react-native-modal';
 import { Button } from "../../components/Button";
 
@@ -54,8 +55,8 @@ import {
 } from "./contactSectionStyle";
 import { AboutSectionContainer, AboutSectionContentText, AboutSectionImage, AboutSectionTitle } from "./aboutSectionStyle";
 
-const DEFAULT_HISTORY = 'Trabalho metodista em Santana de Parnaíba teve seu inpicio a partir da visão missionária da irmã Domitila Ladeia Gomes, membro da Igreja Metodista em Itaberaba, que, ao ler na estrada uma placa com o nome daquele município, em outubro de 1994, guardou-o em seu coração, indo inclusive visitar a cidade com a irmã Ruth Beloni';
-const DEFAULT_ABOUT = 'Somos uma igreja dedicada ao amor a Deus e ao próximo, buscando compartilhar os princípios bíblicos de santidade, amor e graça. Temos 27 anos de história na cidade de Santana de Parnaíba e continuamos fazendo história através do poder de Deus que habita em nós. Venha você também fazer parte dessa história!';
+const DEFAULT_HISTORY = 'O trabalho metodista em Santana de Parnaíba teve início a partir da visão missionária de Domitila Ladeia Gomes, membro da Igreja Metodista em Itaberaba. Em outubro de 1994, ao ler na estrada uma placa com o nome do município, ela guardou aquela cidade em seu coração e foi visitá-la com Ruth Beloni.';
+const DEFAULT_ABOUT = 'A Igreja Metodista em Santana de Parnaíba é uma comunidade dedicada ao amor a Deus e ao próximo, compartilhando os princípios bíblicos de santidade, amor e graça. Sua história na cidade continua sendo construída com a participação da comunidade. Venha fazer parte dessa história!';
 const DEFAULT_MISSION = 'Salvar almas para Cristo!';
 const DEFAULT_PASTOR = 'Conheça nosso dedicado pastor, que traz mensagens inspiradoras todos os domingos. Saiba sobre sua jornada, valores, e visão para nossa igreja';
 
@@ -68,6 +69,7 @@ export default function Info({ navigation }){
   const [about, setAbout] = useState(DEFAULT_ABOUT);
   const [mission, setMission] = useState(DEFAULT_MISSION);
   const [pastorText, setPastorText] = useState(DEFAULT_PASTOR);
+  const [historyExpanded, setHistoryExpanded] = useState(false);
 
   // Modal state
   const [modalVisible, setModalVisible] = useState(false);
@@ -75,6 +77,15 @@ export default function Info({ navigation }){
   const [editValue, setEditValue] = useState('');
   const [editTitle, setEditTitle] = useState('');
   const [saving, setSaving] = useState(false);
+  const scope = useSessionScope(user?.uid, isAdmin);
+
+  useEffect(() => {
+    setModalVisible(false);
+    setEditField('');
+    setEditValue('');
+    setEditTitle('');
+    setSaving(false);
+  }, [user?.uid, isAdmin]);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, 'config', 'info'), (docSnap) => {
@@ -92,30 +103,42 @@ export default function Info({ navigation }){
   }, [user]);
 
   const openEditModal = (field, currentValue, title) => {
+    if (!isAdmin || !user) return;
+    scope.invalidate();
+    setSaving(false);
     setEditField(field);
     setEditValue(currentValue);
     setEditTitle(title);
     setModalVisible(true);
   };
 
+  const closeEditModal = () => {
+    scope.invalidate();
+    setSaving(false);
+    setModalVisible(false);
+  };
+
   const saveEdit = async () => {
+    if (!isAdmin || !user || saving || !['history', 'about', 'mission', 'pastorText'].includes(editField)) return;
     if (!editValue.trim()) {
       Alert.alert("Atenção", "O texto não pode estar vazio.");
       return;
     }
     setSaving(true);
+    const token = scope.capture();
     try {
       await setDoc(doc(db, 'config', 'info'), {
-        history, about, mission, pastorText,
         [editField]: editValue.trim()
-      });
+      }, { merge: true });
+      if (!scope.isCurrent(token)) return;
       setModalVisible(false);
       Alert.alert("Sucesso", "Texto atualizado!");
     } catch (err) {
+      if (!scope.isCurrent(token)) return;
       console.warn('Info save error:', err.code || err.message);
       Alert.alert("Erro", "Não foi possível salvar.");
     } finally {
-      setSaving(false);
+      if (scope.isCurrent(token)) setSaving(false);
     }
   };
 
@@ -124,26 +147,39 @@ export default function Info({ navigation }){
     Linking.openURL(url);
   }
 
+  const openContact = async (url) => {
+    try {
+      await Linking.openURL(url);
+    } catch (error) {
+      Alert.alert('Link indisponível', 'Não foi possível abrir este contato neste dispositivo.');
+    }
+  };
+
   const contacts = [
     {
-      icon: <Entypo name="phone" size={50} color="black" />,
-      value: '+55 (11) 96450-4244'
+      icon: <Entypo name="phone" size={24} color="#272b30" />,
+      value: '+55 (11) 96450-4244',
+      url: 'tel:+5511964504244'
     },
     {
-      icon: <FontAwesome5 name="whatsapp" size={50} color="black" />,
-      value: '+55 (11) 96450-4244'
+      icon: <FontAwesome5 name="whatsapp" size={24} color="#272b30" />,
+      value: '+55 (11) 96450-4244',
+      url: 'https://wa.me/5511964504244'
     },
     {
-      icon: <Entypo name="facebook" size={50} color="black" />,
-      value: 'Metodista Santana de Parnaíba'
+      icon: <Entypo name="facebook" size={24} color="#272b30" />,
+      value: 'Metodista Santana de Parnaíba',
+      url: 'https://www.facebook.com/search/top?q=Metodista%20Santana%20de%20Parna%C3%ADba'
     },
     {
-      icon: <Entypo name="youtube" size={50} color="black" />,
-      value: 'Metodista Santana de Parnaíba'
+      icon: <Entypo name="youtube" size={24} color="#272b30" />,
+      value: 'Metodista Santana de Parnaíba',
+      url: 'https://www.youtube.com/results?search_query=Metodista+Santana+de+Parna%C3%ADba'
     },
     {
-      icon: <Entypo name="instagram" size={50} color="black" />,
-      value: '@metodista.santanadeparnaiba'
+      icon: <Entypo name="instagram" size={24} color="#272b30" />,
+      value: '@metodista.santanadeparnaiba',
+      url: 'https://www.instagram.com/metodista.santanadeparnaiba/'
     }
   ]
 
@@ -165,22 +201,20 @@ export default function Info({ navigation }){
         <UsSectionContainer>
           <UsSectionImage source={NosImagem}/>
 
-          <UsSectionSinceText>
-            Desde 1996
-          </UsSectionSinceText>
+          <UsSectionSinceText>Desde 1994</UsSectionSinceText>
 
           <View style={styles.sectionHeaderRow}>
             <UsSectionTitle>Nossa história:</UsSectionTitle>
             <EditButton onPress={() => openEditModal('history', history, 'Nossa História')} />
           </View>
 
-          <UsSectionContentText>
+          <UsSectionContentText numberOfLines={historyExpanded ? undefined : 4}>
             {history}
           </UsSectionContentText>
 
-          <ReadMoreButton>
+          <ReadMoreButton onPress={() => setHistoryExpanded((value) => !value)} accessibilityRole="button">
             <ReadMoreButtonText>
-              Ler mais
+              {historyExpanded ? 'Ler menos' : 'Ler mais'}
             </ReadMoreButtonText>
             <FontAwesome5 name="angle-right" size={20} color="black" />
           </ReadMoreButton>
@@ -221,7 +255,7 @@ export default function Info({ navigation }){
 
           <ContactsContainer>
             {contacts.map((item, index) => (
-              <ContactItem key={index}>
+              <ContactItem key={index} onPress={() => openContact(item.url)} accessibilityRole="button">
                 {item.icon}
                 <ContactValueText>
                   {item.value}
@@ -258,7 +292,7 @@ export default function Info({ navigation }){
       )
     },
   ]
-  const [selectedKey, setSelectedKey] = useState(2)
+  const [selectedKey, setSelectedKey] = useState(1)
 
   return (
     <SafeAreaViewComponent>
@@ -274,8 +308,8 @@ export default function Info({ navigation }){
           <MenuSrc>
             {menuItems.map((item) => (
               <MenuItem key={item.key} onPress={() => setSelectedKey(item.key)} isSelected={item.key === selectedKey}>
-                <MenuItemLabel>
-                  {item.label}
+              <MenuItemLabel isSelected={item.key === selectedKey}>
+                {item.label}
                 </MenuItemLabel>
               </MenuItem>
             ))}
@@ -288,7 +322,7 @@ export default function Info({ navigation }){
         </MenuContainer>
       </HomeContainer>
 
-      <Modal isVisible={modalVisible} onBackdropPress={() => setModalVisible(false)}>
+      <Modal isVisible={modalVisible} onBackdropPress={closeEditModal} onBackButtonPress={closeEditModal}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Editar: {editTitle}</Text>
@@ -302,7 +336,7 @@ export default function Info({ navigation }){
             />
             <View style={{ marginTop: 16, gap: 8 }}>
               <Button label={saving ? "Salvando..." : "Salvar"} type="primary" onPress={saveEdit} disabled={saving} />
-              <Button label="Cancelar" type="secondary" onPress={() => setModalVisible(false)} />
+              <Button label="Cancelar" type="secondary" onPress={closeEditModal} />
             </View>
           </View>
         </KeyboardAvoidingView>

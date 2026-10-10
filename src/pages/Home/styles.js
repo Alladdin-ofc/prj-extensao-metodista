@@ -1,66 +1,63 @@
-import styled from "styled-components/native";
+import { StyleSheet } from 'react-native';
 
-export const HomeContainer = styled.ScrollView`
-  width: 100%;
-  height: 100%;
-  background-color: #f8f9fa;
-`
-
-export const HeaderContainer = styled.View`
-  width: 100%;
-  padding: 32px 24px;
-  background-color: #2b303a;
-  border-bottom-left-radius: 24px;
-  border-bottom-right-radius: 24px;
-`
-
-export const GreetingText = styled.Text`
-  font-size: 28px;
-  font-weight: bold;
-  color: white;
-  margin-top: 16px;
-`
-
-export const SubTitle = styled.Text`
-  font-size: 16px;
-  color: #d1d5db;
-  margin-top: 4px;
-`
-
-export const SectionTitle = styled.Text`
-  font-size: 20px;
-  font-weight: bold;
-  color: #1f2937;
-  margin: 24px 24px 16px 24px;
-`
-
-export const NewsCard = styled.View`
-  background-color: white;
-  margin: 0 24px 16px 24px;
-  padding: 16px;
-  border-radius: 12px;
-  elevation: 3;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.05);
-  border-left-width: 4px;
-  border-left-color: ${props => props.priority === 'high' ? '#ef4444' : '#3b82f6'};
-`
-
-export const NewsMessage = styled.Text`
-  font-size: 16px;
-  color: #374151;
-  line-height: 24px;
-`
-
-export const NewsDate = styled.Text`
-  font-size: 12px;
-  color: #9ca3af;
-  margin-top: 8px;
-  text-align: right;
-`
-
-export const EmptyNewsText = styled.Text`
-  font-size: 14px;
-  color: #6b7280;
-  text-align: center;
-  margin-top: 16px;
-`
+export default StyleSheet.create({
+  page: { flex: 1, backgroundColor: '#f7f8fa' },
+  content: { paddingBottom: 24 },
+  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 18, backgroundColor: '#fff' },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  logo: { width: 44, height: 44 },
+  brandText: { flex: 1, minWidth: 0 },
+  greeting: { color: '#202328', fontSize: 21, fontWeight: '700' },
+  churchName: { color: '#5e656d', fontSize: 12, marginTop: 3 },
+  adminMark: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: '#dceef8' },
+  welcome: { color: '#4b5158', fontSize: 15, marginTop: 14 },
+  sectionHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 20, marginTop: 24, marginBottom: 12, minHeight: 32 },
+  sectionTitle: { color: '#202328', fontSize: 19, fontWeight: '700' },
+  seeAll: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  seeAllText: { color: '#167ec3', fontSize: 13, fontWeight: '600' },
+  eventRail: { paddingHorizontal: 20, gap: 12 },
+  eventTile: { width: 224, height: 168, borderRadius: 8, overflow: 'hidden', backgroundColor: '#353b42' },
+  eventImage: { flex: 1, justifyContent: 'space-between', padding: 12 },
+  eventImageStyle: { width: '100%', height: '100%', borderRadius: 8 },
+  eventShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(13, 18, 24, 0.44)' },
+  eventBadge: { alignSelf: 'flex-start', overflow: 'hidden', borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5, color: '#25282c', backgroundColor: '#fff', fontSize: 11, fontWeight: '600' },
+  eventTileCopy: { gap: 4 },
+  eventTitle: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  eventMeta: { color: '#fff', fontSize: 12, textTransform: 'capitalize' },
+  eventLoading: { marginVertical: 24 },
+  inlineError: { alignSelf: 'center', color: '#6e747c', fontSize: 13, marginLeft: 8 },
+  recommendationRail: { paddingHorizontal: 20, gap: 12 },
+  recommendationCard: { width: 190, height: 174, overflow: 'hidden', borderRadius: 8, backgroundColor: '#fff' },
+  recommendationImage: { flex: 1, padding: 12, justifyContent: 'space-between' },
+  recommendationImageStyle: { width: '100%', height: '100%', borderRadius: 8 },
+  recommendationActionLight: { color: '#25282c', backgroundColor: '#fff', alignSelf: 'flex-start', overflow: 'hidden', paddingHorizontal: 9, paddingVertical: 5, borderRadius: 12, fontSize: 11, fontWeight: '600' },
+  recommendationCopy: { gap: 3 },
+  recommendationTitleLight: { color: '#fff', fontSize: 17, fontWeight: '700' },
+  recommendationDetailLight: { color: '#fff', fontSize: 12 },
+  givingCard: { flex: 1, padding: 14, backgroundColor: '#e3f1f8', justifyContent: 'center' },
+  givingIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  recommendationTitle: { color: '#202328', fontSize: 16, fontWeight: '700' },
+  recommendationDetail: { color: '#4b5158', fontSize: 12, marginTop: 4 },
+  recommendationAction: { color: '#167ec3', fontSize: 12, fontWeight: '700', marginTop: 10 },
+  iconButton: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#1689d6', alignItems: 'center', justifyContent: 'center' },
+  newsLoading: { marginVertical: 16 },
+  noticeEmpty: { marginHorizontal: 20, padding: 16, backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#e2e5e8', alignItems: 'center', gap: 6 },
+  emptyText: { color: '#555c64', fontSize: 13, textAlign: 'center' },
+  retryText: { color: '#167ec3', fontSize: 13, fontWeight: '600', marginTop: 4 },
+  noticeRow: { marginHorizontal: 20, paddingVertical: 13, paddingHorizontal: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e8eaed', flexDirection: 'row', alignItems: 'center', gap: 10 },
+  priorityMark: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#1689d6' },
+  priorityHigh: { backgroundColor: '#c92834' },
+  noticeCopy: { flex: 1, minWidth: 0 },
+  noticeMessage: { color: '#292d32', fontSize: 14, lineHeight: 20 },
+  noticeDate: { color: '#626970', fontSize: 12, marginTop: 4, textTransform: 'capitalize' },
+  modalContent: { backgroundColor: '#fff', borderRadius: 8, padding: 22, gap: 8 },
+  modalTitle: { color: '#202328', fontSize: 21, fontWeight: '700', marginBottom: 4 },
+  fieldLabel: { color: '#34383d', fontSize: 14, fontWeight: '600', marginTop: 6 },
+  modalInput: { minHeight: 108, borderColor: '#d7dbe0', borderWidth: 1, borderRadius: 6, padding: 12, color: '#202328', fontSize: 15, textAlignVertical: 'top' },
+  priorityOptions: { flexDirection: 'row', gap: 8 },
+  priorityOption: { minHeight: 38, paddingHorizontal: 14, borderRadius: 19, borderWidth: 1, borderColor: '#cdd2d8', justifyContent: 'center' },
+  priorityOptionSelected: { backgroundColor: '#dceef8', borderColor: '#1689d6' },
+  priorityOptionText: { color: '#4d535a', fontSize: 13 },
+  priorityOptionTextSelected: { color: '#126fae', fontWeight: '700' },
+  modalActions: { gap: 8, marginTop: 12 }
+});

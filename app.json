@@ -4,23 +4,27 @@
     "slug": "Metodista",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/metodista-app-icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/MetodistaLogo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#111827"
+      "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.arrudonimous.Metodista",
+      "infoPlist": {
+        "NSCalendarsUsageDescription": "Permita adicionar o evento escolhido ao seu calendario. O aplicativo nao consulta seus compromissos."
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#111827"
+        "foregroundImage": "./assets/metodista-app-icon.png",
+        "backgroundColor": "#ffffff"
       },
       "package": "com.arrudonimous.Metodista"
     },
@@ -28,7 +32,12 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      ["expo-image-picker", {
+        "photosPermission": "Permita acesso a uma foto para personalizar seu perfil.",
+        "cameraPermission": false,
+        "microphonePermission": false
+      }]
     ],
     "extra": {
       "eas": {

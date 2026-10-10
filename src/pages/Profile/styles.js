@@ -1,76 +1,46 @@
-import styled from "styled-components/native";
+import { StyleSheet } from 'react-native';
 
-export const ProfileContainer = styled.ScrollView`
-  width: 100%;
-  height: 100%;
-  background-color: #f3f4f6;
-`
-
-export const HeaderContainer = styled.View`
-  width: 100%;
-  padding: 48px 24px 32px 24px;
-  background-color: #111827;
-  display: flex;
-  align-items: center;
-  border-bottom-left-radius: 32px;
-  border-bottom-right-radius: 32px;
-`
-
-export const AvatarImage = styled.Image`
-  width: 120px;
-  height: 120px;
-  border-radius: 60px;
-  border-width: 4px;
-  border-color: white;
-  margin-bottom: 16px;
-`
-
-export const ProfileName = styled.Text`
-  font-size: 24px;
-  font-weight: bold;
-  color: white;
-`
-
-export const ProfileEmail = styled.Text`
-  font-size: 14px;
-  color: #9ca3af;
-  margin-top: 4px;
-`
-
-export const InfoCard = styled.View`
-  background-color: white;
-  margin: 32px 24px 16px 24px;
-  padding: 24px;
-  border-radius: 16px;
-  elevation: 2;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.05);
-`
-
-export const InfoRow = styled.View`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-bottom: 16px;
-  border-bottom-width: 1px;
-  border-bottom-color: #f3f4f6;
-  padding-bottom: 12px;
-`
-
-export const InfoTextContainer = styled.View`
-  margin-left: 16px;
-`
-
-export const InfoLabel = styled.Text`
-  font-size: 12px;
-  color: #6b7280;
-`
-
-export const InfoValue = styled.Text`
-  font-size: 16px;
-  color: #1f2937;
-  font-weight: 500;
-`
-
-export const LogoutButtonContainer = styled.View`
-  padding: 0 24px 32px 24px;
-`
+export default StyleSheet.create({
+  page: { flex: 1, backgroundColor: '#f7f8fa' },
+  content: { paddingBottom: 26 },
+  header: { alignItems: 'center', paddingTop: 28, paddingBottom: 24, paddingHorizontal: 22, backgroundColor: '#20242a' },
+  avatar: { width: 104, height: 104, borderRadius: 52, borderWidth: 3, borderColor: '#fff' },
+  avatarFallback: { width: 104, height: 104, borderRadius: 52, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#fff', backgroundColor: '#5a626b' },
+  name: { color: '#fff', fontSize: 23, fontWeight: '700', marginTop: 14, textAlign: 'center' },
+  email: { color: '#e0e4e8', fontSize: 13, marginTop: 4 },
+  location: { color: '#e0e4e8', fontSize: 12, marginTop: 6 },
+  sectionHeading: { marginHorizontal: 20, marginTop: 22, marginBottom: 10, minHeight: 36, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  sectionTitle: { color: '#202328', fontSize: 19, fontWeight: '700' },
+  editButton: { minHeight: 36, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', gap: 5 },
+  editButtonText: { color: '#167ec3', fontSize: 13, fontWeight: '600' },
+  infoList: { marginHorizontal: 20, paddingHorizontal: 14, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e1e4e7', borderRadius: 8 },
+  infoRow: { minHeight: 66, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#eaedef' },
+  infoIcon: { width: 32, alignItems: 'center' },
+  infoCopy: { flex: 1, minWidth: 0 },
+  infoLabel: { color: '#646b73', fontSize: 12 },
+  infoValue: { color: '#292d32', fontSize: 14, marginTop: 3, lineHeight: 20 },
+  logoutArea: { marginHorizontal: 20, marginTop: 18, gap: 10 },
+  guestPage: { flex: 1, paddingHorizontal: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
+  guestIcon: { width: 76, height: 76, borderRadius: 38, backgroundColor: '#dceef8', alignItems: 'center', justifyContent: 'center' },
+  guestTitle: { color: '#202328', fontSize: 22, fontWeight: '700', textAlign: 'center', marginTop: 18 },
+  guestText: { maxWidth: 340, color: '#555c64', fontSize: 15, lineHeight: 22, textAlign: 'center', marginTop: 8 },
+  guestActions: { width: '100%', maxWidth: 360, gap: 10, marginTop: 24 },
+  modal: { backgroundColor: '#fff', borderRadius: 8 },
+  modalContent: { padding: 20, paddingBottom: 28 },
+  modalTitle: { color: '#202328', fontSize: 21, fontWeight: '700', marginBottom: 14 },
+  avatarPicker: { width: 92, height: 92, borderRadius: 46, borderWidth: 1, borderColor: '#cbd1d7', backgroundColor: '#f7f8fa', alignSelf: 'center', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginBottom: 14 },
+  avatarPreview: { width: '100%', height: '100%' },
+  avatarLabel: { color: '#4f5962', fontSize: 10, position: 'absolute', bottom: 5, backgroundColor: 'rgba(255,255,255,0.86)', paddingHorizontal: 5, borderRadius: 4 },
+  field: { marginBottom: 12, flex: 1 },
+  label: { color: '#34383d', fontSize: 13, fontWeight: '600', marginBottom: 6 },
+  input: { minHeight: 46, borderWidth: 1, borderColor: '#d7dbe0', borderRadius: 6, paddingHorizontal: 12, color: '#202328', fontSize: 15, backgroundColor: '#fff' },
+  phoneTypeRow: { flexDirection: 'row', gap: 10, marginBottom: 12 },
+  phoneType: { flex: 1, minHeight: 40, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#cdd2d8', borderRadius: 20 },
+  phoneTypeSelected: { borderColor: '#1689d6', backgroundColor: '#dceef8' },
+  phoneTypeText: { color: '#4d535a', fontSize: 13 },
+  phoneTypeTextSelected: { color: '#126fae', fontWeight: '700' },
+  cityRow: { flexDirection: 'row', gap: 10 },
+  cityField: { flex: 1 },
+  stateField: { width: 74 },
+  modalActions: { gap: 8, marginTop: 6 }
+});

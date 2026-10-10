@@ -1,104 +1,29 @@
-import styled from "styled-components/native";
+import { StyleSheet } from 'react-native';
 
-// Aqui são feitas todas as estlizações feitas para a tela de Register
-
-export const RegisterContainter = styled.View`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`
-
-export const HeaderContainer = styled.View`
-  width: 80%;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: space-between;
-`
-
-export const AvatarInputContainer = styled.View`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 16px;
-`
-
-export const HeaderTitle = styled.Text`
-  font-size: 16px;
-  font-weight: bold;
-`
-
-export const CancelButton = styled.TouchableOpacity`
-  padding: 16px;
-  border-color: black;
-  border-radius: 16px;
-  border-width: 1px;
-`
-
-
-export const FormContainer = styled.View`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 80%;
-  gap: 16px;
-`
-
-export const FormItemName = styled.View`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  width: 100%;
-  align-items: flex-start;
-`
-
-export const FormInputName = styled.TextInput`
-  width: 100%;
-  border-color: lightgrey;
-  border-width: 1px;
-  border-radius: 8px;
-  padding: 8px;
-  font-size: 16px;
-`
-
-export const FormItem = styled.View`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-`
-export const FormLabel = styled.Text`
-  font-size: 16px;
-`
-
-export const FormIcon = styled.View`
-  display: flex;
-  align-items: center;
-  width: 10%;
-  justify-content: center;
-`
-
-export const FormInput = styled.TextInput`
-  border-color: lightgrey;
-  border-width: 1px;
-  border-radius: 8px;
-  padding: 8px;
-  font-size: 16px;
-  width: 85%;
-`
-
-
-
-
-export const SrcContainer = styled.View`
-  display: flex;
-  align-items: flex-end;
-  width: 80%;
-  margin-top: 24px;
-`
+export default StyleSheet.create({
+  scrollContent: { flexGrow: 1, backgroundColor: '#fff' },
+  page: { width: '100%', maxWidth: 520, alignSelf: 'center', paddingHorizontal: 22, paddingTop: 18, paddingBottom: 32 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 22 },
+  logo: { width: 52, height: 52 },
+  headerCopy: { flex: 1, minWidth: 0 },
+  title: { color: '#202328', fontSize: 23, fontWeight: '700' },
+  subtitle: { color: '#5f666e', fontSize: 13, marginTop: 3 },
+  backButton: { minHeight: 40, paddingHorizontal: 12, borderWidth: 1, borderColor: '#d1d5da', borderRadius: 6, justifyContent: 'center' },
+  backText: { color: '#3f454b', fontSize: 13, fontWeight: '600' },
+  avatarPicker: { width: 100, height: 100, borderRadius: 50, borderWidth: 1, borderColor: '#cbd1d7', backgroundColor: '#f7f8fa', alignSelf: 'center', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginBottom: 20 },
+  avatar: { width: '100%', height: '100%' },
+  avatarLabel: { color: '#4f5962', fontSize: 10, marginTop: 3 },
+  field: { marginBottom: 13, flex: 1 },
+  label: { color: '#34383d', fontSize: 13, fontWeight: '600', marginBottom: 6 },
+  input: { minHeight: 48, borderWidth: 1, borderColor: '#d7dbe0', borderRadius: 6, paddingHorizontal: 12, color: '#202328', fontSize: 15, backgroundColor: '#fff' },
+  segmentedRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
+  segment: { flex: 1, minHeight: 42, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#cdd2d8', borderRadius: 21 },
+  segmentSelected: { borderColor: '#1689d6', backgroundColor: '#dceef8' },
+  segmentText: { color: '#4d535a', fontSize: 14 },
+  segmentTextSelected: { color: '#126fae', fontWeight: '700' },
+  cityRow: { flexDirection: 'row', gap: 12 },
+  cityField: { flex: 1 },
+  stateField: { width: 82 },
+  actions: { marginTop: 7, gap: 12 },
+  privacyNote: { color: '#646b73', fontSize: 12, lineHeight: 18, textAlign: 'center', paddingHorizontal: 8 }
+});

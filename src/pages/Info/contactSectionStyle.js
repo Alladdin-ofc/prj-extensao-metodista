@@ -5,27 +5,29 @@ export const ContactSectionContainer = styled.ScrollView`
 `
 
 export const ContactSectionTitle = styled.Text`
+  color: #22262b;
   font-weight: 700;
-  font-size: 28px;
+  font-size: 22px;
 `
 
 export const MapImage = styled.Image`
   width: 100%;
-  border-radius: 20px;
+  border-radius: 8px;
   height: 200px;
   margin-top: 8px;
   margin-bottom: 20px;
 `
 
 export const AddressText = styled.Text`
-  font-size: 20px;
+  font-size: 16px;
+  line-height: 23px;
   margin-bottom: 20px;
 `
 
 export const GoForButton = styled.TouchableOpacity`
   background-color: #1891E2;
   padding: 10px 20px;
-  border-radius: 5px;
+  border-radius: 6px;
   align-items: center;
 `
 
@@ -43,18 +45,21 @@ export const ContactsContainer = styled.View`
   margin-bottom: 100px;
 `
 
-export const ContactItem = styled.View`
+export const ContactItem = styled.TouchableOpacity`
   display: flex;
   flex-direction: row;
-  gap: 12px;
+  gap: 14px;
   border: 1px solid gray;
   border-right-width: 0;
   border-left-width: 0;
   border-bottom-width: 0;
   align-items: center;
-  padding: 12px;
+  min-height: 58px;
+  padding: 10px 4px;
 `
 
 export const ContactValueText = styled.Text`
-  font-size: 20px;
+  flex: 1;
+  color: #30353b;
+  font-size: 14px;
 `

@@ -1,69 +1,74 @@
-import styled from "styled-components/native";
+import styled from 'styled-components/native';
 
 export const SignInContainer = styled.View`
+  flex: 1;
   width: 100%;
-  height: 100%;
-  display: flex;
   align-items: center;
   justify-content: center;
-`
+  padding: 26px 24px;
+  background-color: #ffffff;
+`;
 
 export const HeaderContainer = styled.View`
-  width: 80%;
-  display: flex;
+  width: 100%;
+  max-width: 420px;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 32px;
-`
+  margin-bottom: 26px;
+`;
 
 export const HeaderTitle = styled.Text`
-  font-size: 24px;
-  font-weight: bold;
-`
+  color: #202328;
+  font-size: 23px;
+  font-weight: 700;
+  flex: 1;
+`;
 
 export const CancelButton = styled.TouchableOpacity`
-  padding: 8px 16px;
-  border-color: black;
-  border-radius: 16px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-color: #cfd4d9;
+  border-radius: 6px;
   border-width: 1px;
-`
+  justify-content: center;
+`;
 
 export const FormContainer = styled.View`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: 80%;
-  gap: 16px;
-`
+  width: 100%;
+  max-width: 420px;
+  gap: 14px;
+`;
 
 export const FormItem = styled.View`
-  display: flex;
+  min-height: 52px;
+  width: 100%;
   flex-direction: row;
   align-items: center;
-  width: 100%;
-  justify-content: space-between;
-`
+  gap: 12px;
+`;
 
 export const FormIcon = styled.View`
-  display: flex;
+  width: 28px;
   align-items: center;
-  width: 10%;
   justify-content: center;
-`
+`;
 
 export const FormInput = styled.TextInput`
-  border-color: lightgrey;
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  border-color: #d7dbe0;
   border-width: 1px;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 12px;
-  font-size: 16px;
-  width: 85%;
-`
+  font-size: 15px;
+  color: #202328;
+`;
 
 export const SrcContainer = styled.View`
-  display: flex;
-  align-items: flex-end;
-  width: 80%;
-  margin-top: 32px;
-`
+  width: 100%;
+  max-width: 420px;
+  align-items: stretch;
+  margin-top: 24px;
+`;

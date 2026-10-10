@@ -5,23 +5,27 @@ export const AboutSectionContainer = styled.ScrollView`
 
 
 export const AboutSectionTitle = styled.Text`
+  color: #22262b;
   font-weight: 700;
-  font-size: 28px;
-  text-align: center;
+  font-size: 22px;
+  text-align: left;
   margin-bottom: 8px;
 `
 
 
 export const AboutSectionContentText = styled.Text`
-  font-size: 20px;
-  text-align: center;
-  margin-bottom: 4px;
+  color: #444b53;
+  font-size: 15px;
+  line-height: 22px;
+  text-align: left;
+  margin-bottom: 8px;
 `
 
 
 export const AboutSectionImage = styled.Image`
-  width: 30%;
+  width: 96px;
   align-self: center;
-  height: 200px;
-  margin-bottom: 40px;
+  height: 110px;
+  margin-bottom: 24px;
+  resize-mode: contain;
 `

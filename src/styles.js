@@ -10,10 +10,11 @@ import styled, { css } from "styled-components/native";
 
 // utilizando o SafeAreaView, componente que delimita automaticamente o tamanho da tela, no caso do android não funciona corretamente, então existe a verificação, caso seja android um espaçamento interno de 40px é aplicado
 export const SafeAreaViewComponent = styled(SafeAreaView)`
-  height: 100%;
+  flex: 1;
+  width: 100%;
+  max-width: 480px;
+  align-self: center;
   background-color: white;
-  padding-top: ${SO === 'android' ? '40px' : '0px'};
-  padding-bottom: ${SO === 'android' ? '40px' : '0px'};
 `;
 
 

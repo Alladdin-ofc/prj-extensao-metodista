@@ -1,75 +1,79 @@
-import styled from "styled-components/native";
-
+import styled from 'styled-components/native';
 import { Platform } from 'react-native';
 
-const SO = Platform.OS;
+const isAndroid = Platform.OS === 'android';
 
-// Aqui são feitas todas as estlizações feitas para a tela de Home
 export const HomeContainer = styled.View`
+  flex: 1;
   width: 100%;
-  height: 100%;
-  display: flex;
+  background-color: #ffffff;
   align-items: center;
-  justify-content: center;
-`
+`;
 
 export const Body = styled.View`
-  width: 80%;
-  height: ${SO === 'android' ? '100%' : '80%'};
-  display: flex;
+  flex: 1;
+  width: 100%;
+  max-width: 480px;
+  padding: ${isAndroid ? '20px 24px 22px' : '28px 24px 22px'};
   align-items: center;
   justify-content: space-between;
-`
+`;
 
 export const InfoContainer = styled.View`
   width: 100%;
+  flex: 1;
   align-items: center;
   justify-content: center;
-`
-
-export const SliderBody = styled.View`
-  display: flex;
-  align-items: center;
-  padding: 4px;
-`
-
-export const SliderText = styled.Text`
-  font-size: 16px;
-  color: gray;
-`
+`;
 
 export const LogoImage = styled.Image`
-  width: 55%;
-  height: 65%;
-`
+  width: 132px;
+  height: 132px;
+  resize-mode: contain;
+  margin-bottom: 18px;
+`;
 
 export const Title = styled.Text`
-  font-size: 42px;
-  font-weight: bold;
-`
+  color: #202328;
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  max-width: 340px;
+`;
+
+export const SliderBody = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+`;
+
+export const SliderText = styled.Text`
+  color: #555c64;
+  font-size: 15px;
+  text-align: center;
+  line-height: 22px;
+`;
 
 export const SrcContainer = styled.View`
   width: 100%;
-  display: flex;
+  gap: 14px;
   align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 12px;
-`
+`;
 
 export const ButtonsContainer = styled.View`
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-direction: row;
-  gap: 8px;
-`
+  gap: 10px;
+`;
 
 export const GuestButton = styled.TouchableOpacity`
-  background-color: transparent;
-`
+  min-height: 44px;
+  justify-content: center;
+`;
 
 export const GuestButtonText = styled.Text`
-  color: gray;
-`
+  color: #515860;
+  font-size: 14px;
+  text-decoration-line: underline;
+`;
