@@ -4,6 +4,7 @@ import Modal from 'react-native-modal';
 import * as ImagePicker from 'expo-image-picker';
 import { EmailAuthProvider, reauthenticateWithCredential, updateEmail } from 'firebase/auth';
 import { downloadAvatar, uploadAvatar } from '../../services/avatarService';
+import { hasStorage, hasAdminFunctions } from '../../services/firebaseCapabilities';
 import { doc, setDoc } from 'firebase/firestore';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../../context/AuthContext';
@@ -71,7 +72,7 @@ export default function Profile({ navigation }) {
   useEffect(() => {
     let active = true;
     setAvatar(null);
-    if (user && avatarPath) {
+    if (hasStorage && user && avatarPath) {
       const uid = user.uid;
       downloadAvatar(uid, avatarPath).then((source) => {
         if (active) setAvatar({ uid, path: avatarPath, source });
@@ -117,6 +118,7 @@ export default function Profile({ navigation }) {
   };
 
   const selectImage = async () => {
+    if (!hasStorage) return;
     const token = scope.capture();
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -172,7 +174,7 @@ export default function Profile({ navigation }) {
     let authEmailUpdated = false;
     try {
       let savedAvatarPath = avatarPath;
-      if (editImageUri) {
+      if (hasStorage && editImageUri) {
         if (!isCurrentSession()) return;
         savedAvatarPath = await uploadAvatar(savedUid, editImageUri);
       }
@@ -237,7 +239,7 @@ export default function Profile({ navigation }) {
         <View style={styles.guestPage}>
           <View style={styles.guestIcon}><Ionicons name="person-outline" size={38} color="#167ec3" /></View>
           <Text style={styles.guestTitle}>Seu espaço na comunidade</Text>
-          <Text style={styles.guestText}>Entre ou crie seu cadastro para manter seus dados e sua foto de perfil.</Text>
+          <Text style={styles.guestText}>{hasStorage ? 'Entre ou crie seu cadastro para manter seus dados e sua foto de perfil.' : 'Entre ou crie seu cadastro para manter seus dados na comunidade.'}</Text>
           <View style={styles.guestActions}>
             <Button label="Entrar" type="primary" onPress={() => navigation.navigate('SignIn')} />
             <Button label="Criar cadastro" type="secondary" onPress={() => navigation.navigate('Register')} />
@@ -276,7 +278,7 @@ export default function Profile({ navigation }) {
         </View>
 
         <View style={styles.logoutArea}>
-          {isMaster && <Button label="Administrar usuários" type="primary" onPress={() => navigation.navigate('Administration')} />}
+          {isMaster && hasAdminFunctions && <Button label="Administrar usuários" type="primary" onPress={() => navigation.navigate('Administration')} />}
           <Button label="Sair da conta" type="secondary" onPress={handleLogout} />
         </View>
       </ScrollView>
@@ -285,10 +287,10 @@ export default function Profile({ navigation }) {
         <KeyboardAvoidingView style={{ maxHeight: modalMaxHeight }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView style={[styles.modal, { maxHeight: modalMaxHeight }]} contentContainerStyle={styles.modalContent} keyboardShouldPersistTaps="handled">
             <Text style={styles.modalTitle}>Editar perfil</Text>
-            <Pressable accessibilityRole="button" onPress={selectImage} style={styles.avatarPicker}>
+            {hasStorage && <Pressable accessibilityRole="button" onPress={selectImage} style={styles.avatarPicker}>
               {avatarSource ? <Image source={avatarSource} style={styles.avatarPreview} /> : <Ionicons name="camera-outline" size={30} color="#4f5962" />}
               <Text style={styles.avatarLabel}>Alterar foto</Text>
-            </Pressable>
+            </Pressable>}
 
             <Field label="Nome" value={editName} onChangeText={setEditName} autoCapitalize="words" />
             <Field label="E-mail" value={editEmail} onChangeText={setEditEmail} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" />

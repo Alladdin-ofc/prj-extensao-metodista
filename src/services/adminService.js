@@ -1,5 +1,6 @@
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { auth } from './firebaseConfig';
+import { hasAdminFunctions } from './firebaseCapabilities';
 
 const functions = getFunctions(auth.app, 'southamerica-east1');
 const roles = ['member', 'admin', 'master'];
@@ -7,6 +8,7 @@ const validUid = (uid) => typeof uid === 'string' && /^[^\s/]{1,128}$/.test(uid)
 const invalidResponse = () => Object.assign(new Error('invalid-server-response'), { code: 'functions/data-loss' });
 
 export const listMembersForAdministration = async ({ pageSize = 30, pageToken } = {}) => {
+  if (!hasAdminFunctions) throw Object.assign(new Error('administration-disabled'), { code: 'functions/unavailable' });
   if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 50 ||
       (pageToken !== undefined && (typeof pageToken !== 'string' || !pageToken || pageToken.length > 2048))) {
     throw new Error('invalid-pagination');
@@ -29,6 +31,7 @@ export const listMembersForAdministration = async ({ pageSize = 30, pageToken } 
 };
 
 export const setMemberRole = async ({ uid, role }) => {
+  if (!hasAdminFunctions) throw Object.assign(new Error('administration-disabled'), { code: 'functions/unavailable' });
   if (!validUid(uid) || !roles.includes(role)) throw new Error('invalid-role-change');
   const { data } = await httpsCallable(functions, 'setMemberRole')({ uid, role });
   if (data?.uid !== uid || data.role !== role) throw invalidResponse();

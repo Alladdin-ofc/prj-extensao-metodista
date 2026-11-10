@@ -1,6 +1,7 @@
 import { getBytes, getMetadata, ref, uploadBytes } from 'firebase/storage';
 import { fromByteArray } from 'base64-js';
 import { auth, storage } from './firebaseConfig';
+import { hasStorage } from './firebaseCapabilities';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -15,6 +16,7 @@ const imageType = (bytes) => {
 };
 
 export const downloadAvatar = async (uid, path) => {
+  if (!hasStorage) return null;
   assertOwner(uid, path);
   const reference = ref(storage, path);
   const metadata = await getMetadata(reference);
@@ -27,6 +29,7 @@ export const downloadAvatar = async (uid, path) => {
 };
 
 export const uploadAvatar = async (uid, uri) => {
+  if (!hasStorage) throw Object.assign(new Error('avatar-storage-disabled'), { code: 'storage/disabled' });
   const path = `avatars/${uid}.jpg`;
   assertOwner(uid, path);
   const response = await fetch(uri);

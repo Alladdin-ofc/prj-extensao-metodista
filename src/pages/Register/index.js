@@ -4,6 +4,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { uploadAvatar } from '../../services/avatarService';
+import { hasStorage } from '../../services/firebaseCapabilities';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { Button } from '../../components/Button';
@@ -58,6 +59,7 @@ export default function Register({ navigation }) {
   const [loading, setLoading] = useState(false);
 
   const selectImage = async () => {
+    if (!hasStorage) return;
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
@@ -111,7 +113,7 @@ export default function Register({ navigation }) {
       const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
       let avatarPath = '';
 
-      if (imageUri) {
+      if (hasStorage && imageUri) {
         try {
           avatarPath = await uploadAvatar(credential.user.uid, imageUri);
         } catch (uploadError) {
@@ -163,10 +165,10 @@ export default function Register({ navigation }) {
             </Pressable>
           </View>
 
-          <Pressable accessibilityRole="button" onPress={selectImage} style={styles.avatarPicker}>
+          {hasStorage && <Pressable accessibilityRole="button" onPress={selectImage} style={styles.avatarPicker}>
             {imageUri ? <Image source={{ uri: imageUri }} style={styles.avatar} /> : <Ionicons name="camera-outline" size={30} color="#4f5962" />}
             <Text style={styles.avatarLabel}>{imageUri ? 'Alterar foto' : 'Adicionar foto'}</Text>
-          </Pressable>
+          </Pressable>}
 
           <Field label="Nome completo" value={name} onChangeText={setName} placeholder="Seu nome" autoCapitalize="words" />
           <Field label="Data de nascimento" value={dateOfBirth} onChangeText={(value) => setDateOfBirth(formatDate(value))} placeholder="dd/mm/aaaa" keyboardType="numeric" maxLength={10} />

@@ -1,6 +1,39 @@
 # Repasse Firebase: o que o responsavel precisa fazer
 
-Este guia acompanha o codigo atual. Publicar o repositorio nao configura nem implanta recursos Google. Nenhum comando de nuvem abaixo foi executado nesta entrega. Execute-os somente com projeto, conta, custos e mudancas aprovados pelo responsavel.
+Este guia acompanha o codigo atual. Publicar o repositorio nao configura nem implanta recursos Google. A configuracao Spark descrita abaixo foi provisionada e verificada em 24/10/2026; futuras operacoes devem manter projeto, conta e custos explicitamente aprovados.
+
+## Configuracao provisionada em 24/10/2026
+
+- Projeto novo: `extensao-igreja-2026-eruas` (Extensao Universitaria).
+- Plano confirmado no Console: Spark, sem vincular faturamento.
+- Aplicativo Web registrado e `.env` local atualizado com sua configuracao publica.
+- `.firebaserc` e `.env` sao configuracoes locais e nao acompanham este commit.
+- Firestore Standard, banco `(default)`, em `southamerica-east1` (Sao Paulo).
+- Email/Password habilitado e `backend/firestore.rules` publicadas com `firebase.spark.json`.
+- Primeiro master inicializado pelo backend existente, com contagem e auditoria transacionais.
+- Nenhum bucket ou Cloud Function foi implantado. Fotos e painel de promocao ficam desativados no app.
+- Verificacao local: 58 testes unitarios e 33 de integracao passaram; modo Spark bloqueia chamadas a Storage/Functions.
+- Verificacao remota: leitura publica de avisos/eventos/configuracao funciona; listagem anonima de perfis e negada.
+
+Credenciais pessoais devem ser configuradas pelo titular e nunca gravadas no repositorio.
+
+Dados institucionais e PIX reais da nova igreja continuam a cargo do responsavel.
+Este provisionamento nao altera a identidade visual nem a programacao fixa legada.
+
+## Operacao sem faturamento (Spark)
+
+O app usa `EXPO_PUBLIC_FIREBASE_PLAN=spark` por padrao. Nesse modo, cadastro,
+login, perfis sem foto, avisos, eventos, presencas, informacoes e PIX usam Auth
+e Firestore. Selecao/upload de fotos e o painel de promocao de usuarios ficam
+desativados; as permissoes administrativas de conteudo continuam em `adminRoles`.
+O primeiro master ainda exige o bootstrap privilegiado documentado abaixo.
+
+Para este modo, nao criar bucket, vincular faturamento ou implantar Functions.
+O arquivo `backend/firebase.spark.json` inclui o provedor Email/Password e as Rules do Firestore.
+Executar a publicacao apenas no projeto explicitamente autorizado, a partir de
+`backend`, com `--config firebase.spark.json --only auth,firestore:rules`.
+Usar `EXPO_PUBLIC_FIREBASE_PLAN=blaze` somente apos aprovar faturamento e
+provisionar Storage/Functions. Emuladores locais habilitam ambos sem cobranca.
 
 ## 1. Projeto e ambientes
 
@@ -36,6 +69,7 @@ Copiar `.env.example` para `.env`, preencher somente com a configuracao do app W
 | EXPO_PUBLIC_FIREBASE_APP_ID | App ID Web |
 | EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID | Opcional; Analytics nao e inicializado |
 | EXPO_PUBLIC_FIREBASE_EMULATORS | 0 no remoto; 1 somente com demo-metodista-backend |
+| EXPO_PUBLIC_FIREBASE_PLAN | spark por padrao; blaze habilita fotos e painel de permissoes apos provisionamento |
 
 EXPO_PUBLIC_* entra no bundle e nao e um cofre de segredos. Nunca colocar senha de usuario, chave privada, ADC ou token Admin nessas variaveis. Autoridade depende de Auth/Rules/Functions, nao de esconder configuracao publica.
 

@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../../context/AuthContext';
 import { SafeAreaViewComponent } from '../../styles';
 import { listMembersForAdministration, setMemberRole } from '../../services/adminService';
+import { hasAdminFunctions } from '../../services/firebaseCapabilities';
 import styles from './styles';
 
 const roleLabels = { member: 'Membro', admin: 'Administrador', master: 'Administrador master' };
@@ -25,7 +26,7 @@ export default function Administration({ navigation }) {
   const busy = useRef(false);
 
   const load = async (append = false) => {
-    if (!isMaster || !user || busy.current || pendingUid) return;
+    if (!hasAdminFunctions || !isMaster || !user || busy.current || pendingUid) return;
     const current = generation.current;
     busy.current = true;
     setLoading(true);
@@ -61,7 +62,7 @@ export default function Administration({ navigation }) {
   }, [user?.uid, isMaster]);
 
   const changeRole = async (member, role, expectedGeneration) => {
-    if (!isMaster || expectedGeneration !== generation.current || busy.current) return;
+    if (!hasAdminFunctions || !isMaster || expectedGeneration !== generation.current || busy.current) return;
     busy.current = true;
     setPendingUid(member.uid);
     try {
@@ -102,9 +103,9 @@ export default function Administration({ navigation }) {
         <View style={styles.header}>
           <Pressable accessibilityRole="button" accessibilityLabel="Voltar ao perfil" style={styles.iconButton} onPress={() => navigation.navigate('Profile')}><Ionicons name="arrow-back" size={24} color="#202328" /></Pressable>
           <View style={styles.heading}><Text style={styles.title}>Administração</Text><Text style={styles.subtitle}>Usuários e permissões</Text></View>
-          {isMaster && <Pressable accessibilityRole="button" accessibilityLabel="Atualizar usuários" accessibilityState={{ disabled: loading || !!pendingUid }} disabled={loading || !!pendingUid} style={styles.iconButton} onPress={() => load()}><Ionicons name="refresh" size={23} color="#167ec3" /></Pressable>}
+          {isMaster && hasAdminFunctions && <Pressable accessibilityRole="button" accessibilityLabel="Atualizar usuários" accessibilityState={{ disabled: loading || !!pendingUid }} disabled={loading || !!pendingUid} style={styles.iconButton} onPress={() => load()}><Ionicons name="refresh" size={23} color="#167ec3" /></Pressable>}
         </View>
-        {!isMaster ? <View style={styles.feedback}><Ionicons name="lock-closed-outline" size={32} color="#59616b" /><Text style={styles.message}>Acesso restrito ao administrador master.</Text></View> : (
+        {!isMaster ? <View style={styles.feedback}><Ionicons name="lock-closed-outline" size={32} color="#59616b" /><Text style={styles.message}>Acesso restrito ao administrador master.</Text></View> : !hasAdminFunctions ? <View style={styles.feedback}><Text style={styles.message}>A gestão de permissões está indisponível no momento.</Text></View> : (
           <FlatList
             data={members}
             keyExtractor={(member) => member.uid}
